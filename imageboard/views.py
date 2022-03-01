@@ -1,5 +1,5 @@
 from django.shortcuts import render, get_object_or_404, redirect
-from .models import Image
+from .models import Image, Users
 from django.http import HttpResponse
 from .forms import *
 from django.utils import timezone
@@ -32,4 +32,27 @@ def success(request):
     return HttpResponse('successfully uploaded')
 
 def login_page(request):
+    if request.method == 'POST':
+        form = UsersForm(request.POST)
+        if form.is_valid():
+            if Users.objects.filter(login=request.POST.login, password=request.POST.password).exists():
+                return redirect('/profile/'+request.POST.login)
+            else:
+                return render(request, 'imageboard/index.html', {'er': "Login or Password is wrong!"})
+        else:
+            return render(request, 'imageboard/index.html', {'er': "Fill all fields correctly."})
     return render(request, 'imageboard/index.html')
+
+def register(request):
+    if request.method != 'POST':
+        return redirect('')
+    form = UsersForm(request.POST)
+    if form.is_valid():
+        if Users.objects.filter(login=request.POST.login).exists():
+            return render(request, 'imageboard/index.html', {'er': "User with this login already exists!"})
+        user = Users.objects.create(login=request.POST.login, password=request.POST.password)
+        user.save()
+        return redirect('/profile/'+request.POST.login)
+    else:
+        return render(request, 'imageboard/index.html', {'er': "Fill all fields correctly."})
+    
