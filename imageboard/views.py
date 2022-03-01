@@ -30,3 +30,6 @@ def image_new(request):
 
 def success(request):
     return HttpResponse('successfully uploaded')
+
+def login_page(request):
+    return render(request, 'imageboard/index.html')
