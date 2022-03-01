@@ -1,0 +1,5 @@
+PyWavelets
+numpy
+pillow
+scipy
+six

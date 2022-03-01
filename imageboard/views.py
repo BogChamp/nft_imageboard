@@ -21,6 +21,7 @@ def image_new(request):
             image.owner = request.user
             image.likes = 0
             image.public = False
+            image.token = '0' # TODO
             image.save()
             return redirect('image_detail', pk=image.pk)
     else:

@@ -1,6 +1,7 @@
 from django.conf import settings
 from django.db import models
 from django.utils import timezone
+import hashlib
 
 
 class Image(models.Model):
@@ -8,7 +9,7 @@ class Image(models.Model):
                               on_delete=models.CASCADE)
     title = models.CharField(max_length=200)
     image = models.ImageField(upload_to='images/')
-    image_id = models.CharField(max_length=200)
+    token = models.CharField(max_length=200)
     likes = models.IntegerField()
     public = models.BooleanField()
     published_date = models.DateTimeField(blank=True, null=True)
@@ -17,6 +18,7 @@ class Image(models.Model):
         self.published_date = timezone.now()
         self.likes = 0
         self.public = True
+        self.token = hashlib.sha1(self.image).hexdigest()
         self.save()
 
     def __str__(self):
