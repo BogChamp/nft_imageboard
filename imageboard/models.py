@@ -23,10 +23,3 @@ class Image(models.Model):
 
     def __str__(self):
         return self.title
-
-class Users(models.Model):
-    login = models.CharField(max_length=25, unique=True)
-    password = models.CharField(max_length=20)
-
-    def __str__(self):
-        return self.login
