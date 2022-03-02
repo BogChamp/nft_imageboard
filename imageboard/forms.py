@@ -1,9 +1,14 @@
 from django import forms
 
-from .models import Image
+from .models import Image, Users
 
 class ImageForm(forms.ModelForm):
 
     class Meta:
         model = Image
         fields = ('title', 'image', 'public',)
+
+class UsersForm(forms.ModelForm):
+    class Mets:
+        model = Users
+        fields = ['login', 'password']

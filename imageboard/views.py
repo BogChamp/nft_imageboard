@@ -31,4 +31,7 @@ def success(request):
     return HttpResponse('successfully uploaded')
 
 def login_page(request):
-    return render(request, 'imageboard/index.html')
+    return render(request, 'imageboard/login.html')
+
+def registration(request):
+    return render(request, 'imageboard/registration.html')
