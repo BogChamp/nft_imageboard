@@ -9,6 +9,6 @@ class ImageForm(forms.ModelForm):
         fields = ('title', 'image', 'public',)
 
 class UsersForm(forms.ModelForm):
-    class Mets:
+    class Meta:
         model = Users
         fields = ['login', 'password']

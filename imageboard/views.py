@@ -1,5 +1,5 @@
 from django.shortcuts import render, get_object_or_404, redirect
-from .models import Image
+from .models import Image, Users
 from django.http import HttpResponse
 from .forms import *
 from django.utils import timezone
@@ -31,7 +31,29 @@ def success(request):
     return HttpResponse('successfully uploaded')
 
 def login_page(request):
-    return render(request, 'imageboard/login.html')
+    if request.method != 'POST':
+        return render(request, 'imageboard/login.html')
+    form = UsersForm(request.POST)
+    if form.is_valid():
+        if Users.objects.filter(login=request.users.login, password=request.users.password).exists():
+            return redirect('imageboard/profile.html')
+        else:
+            return render(request, 'imageboard/registration.html', {'error': "Login or password is wrong!"})
+
+    return render(request, 'imageboard/registration.html', {'error': "Fill or forms correctly!"})
 
 def registration(request):
-    return render(request, 'imageboard/registration.html')
+    if request.method != 'POST':
+        return render(request, 'imageboard/registration.html')
+    form = UsersForm(request.POST)
+    if form.is_valid():
+        if Users.objects.filter(login=request.users.login).exists():
+            return render(request, 'imageboard/registration.html', {'error': "User with this login already exists!"})
+        user = Users.objects.create(login=request.users.login, password=request.users.password)
+        user.save()
+        return redirect('imageboard/profile.html')
+
+    return render(request, 'imageboard/registration.html', {'error': "Fill or forms correctly!"})
+
+def profile(request):
+    return render(request, 'imageboard/profile.html')

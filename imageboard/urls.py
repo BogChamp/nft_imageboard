@@ -9,6 +9,7 @@ urlpatterns = [
     path('image/new/', views.image_new, name='image_new'),
     path('', views.login_page, name='login'),
     path('registration', views.registration, name='registration'),
+    path('profile', views.profile, name="profile"),
 ]
 
 if settings.DEBUG:
