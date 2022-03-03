@@ -10,7 +10,7 @@ class Image(models.Model):
     title = models.CharField(max_length=200)
     image = models.ImageField(upload_to='images/')
     token = models.CharField(max_length=200)
-    likes = models.IntegerField()
+    likes = models.IntegerField(default=0) # one to many
     public = models.BooleanField()
     published_date = models.DateTimeField(blank=True, null=True)
 
@@ -24,9 +24,4 @@ class Image(models.Model):
     def __str__(self):
         return self.title
 
-class Users(models.Model):
-    login = models.CharField(max_length=20, unique=True)
-    password = models.CharField(max_length=20)
-
-    def __str__(self):
-        return self.login
+#class History
