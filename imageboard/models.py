@@ -25,7 +25,16 @@ class Image(models.Model):
         return self.title
 
 
-# class History
+class History(models.Model):
+    owner = models.ForeignKey(settings.AUTH_USER_MODEL,
+                             on_delete=models.CASCADE)
+    image = models.ForeignKey(Image, on_delete=models.CASCADE)
+    date = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return str(self.user) + ':' + str(self.image.token) + ':' + str(
+            self.date)
+
 
 class Preference(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL,
