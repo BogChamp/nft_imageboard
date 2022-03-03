@@ -27,7 +27,7 @@ def image_new(request):
         if form.is_valid():
             image = form.save(commit=False)
             image.published_date = timezone.now()
-            # image.owner = request.user
+            image.owner = request.user
             image.likes = 0
             # image.token = hashlib.sha1(image.image.instance).hexdigest()
             image.token = 0
@@ -36,10 +36,6 @@ def image_new(request):
     else:
         form = ImageForm()
     return render(request, 'imageboard/image_upload.html', {'form': form})
-
-
-def success(request):
-    return HttpResponse('successfully uploaded')
 
 
 def login_request(request):
@@ -70,12 +66,12 @@ def register_request(request):
             user = form.save()
             login(request, user)
             messages.success(request, "Registration successful.")
-            return redirect('imageboard/profile.html')
+            return redirect("imageboard/profile.html")
         messages.error(request,
                        "Unsuccessful registration. Invalid information.")
     form = NewUserForm()
     return render(request=request,
-                  template_name='imageboard/registration.html',
+                  template_name="imageboard/registration.html",
                   context={"register_form": form})
 
 
