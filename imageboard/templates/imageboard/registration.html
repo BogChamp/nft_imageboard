@@ -39,16 +39,43 @@
 </head>
 <body>
 
-<div class="container py-5">
-    <h1>Register</h1>
-    <form method="POST">
-        {% csrf_token %}
-        {{ register_form }}
-        <button class="btn btn-primary" type="submit">Register</button>
-    </form>
-    <p class="text-center">If you already have an account, <a href="/login">login</a>
-        instead.</p>
-</div>
+      <div class="limiter">
+		<div class="container-login100" style="background-image: url({% static 'images/bg-01.jpg' %});">
+			<div class="wrap-login100 p-t-30 p-b-50">
+				<span class="login100-form-title p-b-41">
+					Account Login
+				</span>
+				<form class="login100-form validate-form p-b-33 p-t-5">
+
+					<div class="wrap-input100 validate-input" data-validate = "Enter username">
+						<p>{{ register_form.username.label }}</p>
+						{{ register_form.username }}
+					</div>
+					
+					<div class="wrap-input100 validate-input" data-validate="Enter password">
+						<p>{{ register_form.password1.label }}</p>
+						{{ register_form.password1 }}
+					</div>
+
+                              <div class="wrap-input100 validate-input" data-validate="Enter password">
+						<p>{{ register_form.password2.label }}</p>
+						{{ register_form.password2 }}
+					</div>
+					
+					<form method="post" action="/">
+                                    {% csrf_token %}
+						<div class="container-login100-form-btn m-t-32">
+							<button class="login100-form-btn">
+								Register
+							</button>
+						</div>
+					</form>
+
+					<p class="text-center">If you already have an account,<a href="/">login</a>.</p>
+				</form>
+			</div>
+		</div>
+	</div>
 
 
 <div id="dropDownSelect1"></div>
