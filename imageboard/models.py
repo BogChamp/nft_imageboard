@@ -1,7 +1,8 @@
+import imagehash
 from django.conf import settings
 from django.db import models
 from django.utils import timezone
-import hashlib
+from PIL import Image as Image_hash
 
 
 class Image(models.Model):
@@ -18,7 +19,8 @@ class Image(models.Model):
         self.published_date = timezone.now()
         self.likes = 0
         self.public = True
-        self.token = hashlib.sha1(self.image).hexdigest()
+        image_hash_obj = Image_hash.open(self.image)
+        self.token = imagehash.average_hash(image_hash_obj)
         self.save()
 
     def __str__(self):
