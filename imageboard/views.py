@@ -8,8 +8,6 @@ from django.contrib.auth import login
 from django.contrib import messages
 from django.contrib.auth import login, authenticate
 from django.contrib.auth.forms import AuthenticationForm
-import hashlib
-
 
 def image_list(request):
     images = Image.objects.filter(public=True).order_by('likes')
@@ -26,11 +24,8 @@ def image_new(request):
         form = ImageForm(request.POST, request.FILES)
         if form.is_valid():
             image = form.save(commit=False)
-            image.published_date = timezone.now()
             image.owner = request.user
-            image.likes = 0
-            # image.token = hashlib.sha1(image.image.instance).hexdigest()
-            image.token = 0
+            image.publish()
             image.save()
             return redirect('image_detail', pk=image.pk)
     else:
