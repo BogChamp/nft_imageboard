@@ -43,7 +43,7 @@ def login_request(request):
             if user is not None:
                 login(request, user)
                 messages.info(request, f"You are now logged in as {username}.")
-                return redirect('imageboard/profile.html')
+                return redirect('profile')
             else:
                 messages.error(request, "Invalid username or password.")
         else:
@@ -57,11 +57,12 @@ def login_request(request):
 def register_request(request):
     if request.method == "POST":
         form = NewUserForm(request.POST)
+        print(form)
         if form.is_valid():
             user = form.save()
             login(request, user)
             messages.success(request, "Registration successful.")
-            return redirect("imageboard/profile.html")
+            return redirect("profile")
         messages.error(request,
                        "Unsuccessful registration. Invalid information.")
     form = NewUserForm()
