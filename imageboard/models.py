@@ -7,7 +7,7 @@ from PIL import Image as Image_hash
 
 class Image(models.Model):
     owner = models.ForeignKey(settings.AUTH_USER_MODEL,
-                              on_delete=models.CASCADE)
+                              on_delete=models.SET_NULL)
     title = models.CharField(max_length=200)
     image = models.ImageField(upload_to='images/')
     token = models.CharField(max_length=200)
