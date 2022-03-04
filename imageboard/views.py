@@ -99,19 +99,21 @@ def image_preference(request, image_token):
     else:
         image = get_object_or_404(Image, token=image_token)
         return image_detail(request, image.token)
-        
+
+
 def profile(request, id):
     user_info = UserInfo.objects.get(id=id)
-    form = UserInfoForm(instance=user_info)
+    form = UserInfoForm()
+    user_pics = Image.objects.filter(owner=request.user)
     if request.method == "POST":
         form = UserInfoForm(request.POST, instance=user_info)
         if form.is_valid():
             form.save()
-            return render(request, 'imageboard/profile.html', {'user_info': user_info, 'form': form})
+            return render(request, 'imageboard/profile.html', {'user_info': user_info, 'form': form, 'pics': user_pics})
         messages.error(request,
                        "AAA.")
     user_info = get_object_or_404(UserInfo, pk=id) 
-    return render(request, 'imageboard/profile.html', {'user_info': user_info, 'form': form})
+    return render(request, 'imageboard/profile.html', {'user_info': user_info, 'form': form, 'pics': user_pics})
 
 
 

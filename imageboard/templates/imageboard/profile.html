@@ -1,3 +1,4 @@
+{%load static%}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -31,5 +32,15 @@
             {{form.info}} 
             <button type="submit">Change</button>
         </form></p>
+        <div>
+            <a href="/board">Top Images</a>
+        </div>
+        {% for pic in pics %}
+            <div>
+            <a href="{% url 'image_detail' image_token=pic.token %}">
+                <h1>{{ pic.title }}</h1></a>
+            <img src="{{ pic.image.url }}" width="200px" height="200px">
+            </div>
+        {% endfor %}
 </body>
 </html>
