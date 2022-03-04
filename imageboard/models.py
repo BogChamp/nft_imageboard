@@ -40,7 +40,7 @@ class History(models.Model):
     date = models.DateTimeField(auto_now=True)
 
     def __str__(self):
-        return str(self.user) + ':' + str(self.image.token) + ':' + str(
+        return str(self.owner) + ' : ' + str(self.image.token) + ' : ' + str(
             self.date)
 
 

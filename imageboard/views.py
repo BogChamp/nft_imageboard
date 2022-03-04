@@ -17,7 +17,11 @@ def image_list(request):
 
 def image_detail(request, image_token):
     image = get_object_or_404(Image, token=image_token)
-    return render(request, 'imageboard/image_detail.html', {'image': image})
+    history = History.objects.filter(image=image)
+    preferences = Preference.objects.filter(image=image)
+    return render(request, 'imageboard/image_detail.html',
+                  {'image': image, 'history': history,
+                   'preferences': preferences})
 
 
 def image_new(request):
@@ -28,8 +32,7 @@ def image_new(request):
             image.owner = request.user
             image.publish()
             image.save()
-            return render(request, 'imageboard/image_detail.html',
-                          {'image': image})
+            return image_detail(request, image.token)
     else:
         form = ImageForm()
     return render(request, 'imageboard/image_upload.html', {'form': form})
@@ -83,8 +86,7 @@ def image_preference(request, image_token):
 
         try:
             Preference.objects.get(user=request.user, image=image)
-            return render(request, 'imageboard/image_detail.html',
-                          {'image': image})
+            return image_detail(request, image.token)
 
         except Preference.DoesNotExist:
             upref = Preference()
@@ -93,9 +95,7 @@ def image_preference(request, image_token):
             image.likes += 1
             upref.save()
             image.save()
-            return render(request, 'imageboard/image_detail.html',
-                          {'image': image})
+            return image_detail(request, image.token)
     else:
         image = get_object_or_404(Image, token=image_token)
-        return render(request, 'imageboard/image_detail.html',
-                      {'image': image})
+        return image_detail(request, image.token)
