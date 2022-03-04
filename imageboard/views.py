@@ -30,9 +30,13 @@ def image_new(request):
         if form.is_valid():
             image = form.save(commit=False)
             image.owner = request.user
-            image.publish()
-            image.save()
-            return image_detail(request, image.token)
+            if image.publish():
+                image.save()
+                return image_detail(request, image.token)
+            else:
+                messages.error(request, "Not unique image")
+                return render(request, 'imageboard/image_upload.html',
+                              {'form': form})
     else:
         form = ImageForm()
     return render(request, 'imageboard/image_upload.html', {'form': form})

@@ -7,7 +7,7 @@ from PIL import Image as Image_hash
 
 class Image(models.Model):
     owner = models.ForeignKey(settings.AUTH_USER_MODEL,
-                              on_delete=models.SET_NULL)
+                              on_delete=models.SET_NULL, null=True)
     title = models.CharField(max_length=200)
     image = models.ImageField(upload_to='images/')
     token = models.CharField(max_length=200)
@@ -21,13 +21,17 @@ class Image(models.Model):
         self.public = True
         image_hash_obj = Image_hash.open(self.image)
         self.token = imagehash.average_hash(image_hash_obj)
-        self.save()
-        history_log = History.objects.create(
-            owner=self.owner,
-            image=self,
-            date=self.date_last_own
-        )
-        history_log.save()
+        if Image.objects.filter(token=self.token).exists():
+            return False
+        else:
+            self.save()
+            history_log = History.objects.create(
+                owner=self.owner,
+                image=self,
+                date=self.date_last_own
+            )
+            history_log.save()
+            return True
 
     def __str__(self):
         return self.title
