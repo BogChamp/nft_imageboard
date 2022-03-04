@@ -7,15 +7,43 @@
           href="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css">
     <link rel="stylesheet"
           href="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap-theme.min.css">
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
 </head>
 <body>
 <div>
     <h1>{{ image.title }}</h1>
     <h2>Token: {{ image.token }}</h2>>
-    <p>Owner: {{ image.owner }}</p>
-    <p>Published date: {{ image.published_date }}</p>
+    <p> <b>Owner:</b> {{ image.owner }}</p>
+    <p> <b>Published date:</b> {{ image.date_last_own }}</p>
     <img src="{{ image.image.url }}" width="200px" height="200px">
-    <p>Likes: {{ image.likes }}</p>
+    <p>
+        <i onClick="document.getElementById('likebutton').submit()"
+           class="fa fa-thumbs-up"
+           style="font-size: 60px;cursor: pointer;user-select: none;"></i> {{ image.likes }}
+
+    <form id="likebutton" method="POST"
+          action="/image/{{ image.token }}/preference/">
+        {% csrf_token %}
+        <input type="hidden">
+    </form>
+    </p>
+    <p>
+        <b> Users who liked this image: </b>
+        {% for preference in preferences %}
+            <div>
+                <p> {{ preference.user }} </p>
+            </div>
+        {% endfor %}
+    </p>
+    <p>
+        <b> History of owning this image: </b>
+        {% for history_log in history %}
+            <div>
+                <p> {{ history_log }} </p>
+            </div>
+        {% endfor %}
+    </p>
 </div>
 </body>
 </html>
