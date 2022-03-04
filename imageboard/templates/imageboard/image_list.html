@@ -42,15 +42,16 @@
 </head>
 <body>
 <div>
-    <a href="{% url 'image_new' %}" class="top-menu"><span
-            class="glyphicon glyphicon-plus"></span></a>
+    <a href="{% url 'image_new' %}" class="top-menu">
+        <span class="glyphicon glyphicon-plus">Upload Image</span>
+        </a>
             <a href="/board"><h1>Top images</h1></a>
 </div>
 {% for image in images %}
     <div>
         <a href="{% url 'image_detail' image_token=image.token %}">
             <h1>{{ image.title }}</h1></a>
-            
+
         <p>owner: {{ image.owner }}</p>
         <img src="{{ image.image.url }}" width="200px" height="200px">
     </div>
