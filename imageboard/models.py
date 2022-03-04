@@ -40,8 +40,7 @@ class History(models.Model):
     date = models.DateTimeField(auto_now=True)
 
     def __str__(self):
-        return str(self.owner) + ' : ' + str(self.image.token) + ' : ' + str(
-            self.date)
+        return str(self.owner) + ' : ' + str(self.date)
 
 
 class Preference(models.Model):
@@ -51,8 +50,7 @@ class Preference(models.Model):
     date = models.DateTimeField(auto_now=True)
 
     def __str__(self):
-        return str(self.user) + ':' + str(self.image.token) + ':' + str(
-            self.date)
+        return str(self.user) + ':' + str(self.date)
 
     class Meta:
         unique_together = ("user", "image")

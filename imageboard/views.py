@@ -17,8 +17,8 @@ def image_list(request):
 
 def image_detail(request, image_token):
     image = get_object_or_404(Image, token=image_token)
-    history = History.objects.filter(image=image)
-    preferences = Preference.objects.filter(image=image)
+    history = History.objects.filter(image=image).order_by('date')
+    preferences = Preference.objects.filter(image=image).order_by('date')
     return render(request, 'imageboard/image_detail.html',
                   {'image': image, 'history': history,
                    'preferences': preferences})
