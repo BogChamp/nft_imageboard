@@ -13,14 +13,19 @@ class Image(models.Model):
     token = models.CharField(max_length=200)
     likes = models.IntegerField(default=0)
     public = models.BooleanField()
-    published_date = models.DateTimeField(blank=True, null=True)
+    date_last_own = models.DateTimeField(blank=True, null=True)
 
     def publish(self):
-        self.published_date = timezone.now()
+        self.date_last_own = timezone.now()
         self.likes = 0
         self.public = True
         image_hash_obj = Image_hash.open(self.image)
         self.token = imagehash.average_hash(image_hash_obj)
+        History.objects.create(
+            owner=self.owner,
+            image=self,
+            date=self.date_last_own
+        )
         self.save()
 
     def __str__(self):
@@ -29,7 +34,7 @@ class Image(models.Model):
 
 class History(models.Model):
     owner = models.ForeignKey(settings.AUTH_USER_MODEL,
-                             on_delete=models.CASCADE)
+                              on_delete=models.CASCADE)
     image = models.ForeignKey(Image, on_delete=models.CASCADE)
     date = models.DateTimeField(auto_now=True)
 
