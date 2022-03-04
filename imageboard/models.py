@@ -21,12 +21,13 @@ class Image(models.Model):
         self.public = True
         image_hash_obj = Image_hash.open(self.image)
         self.token = imagehash.average_hash(image_hash_obj)
-        History.objects.create(
+        self.save()
+        history_log = History.objects.create(
             owner=self.owner,
             image=self,
             date=self.date_last_own
         )
-        self.save()
+        history_log.save()
 
     def __str__(self):
         return self.title

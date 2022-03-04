@@ -28,7 +28,8 @@ def image_new(request):
             image.owner = request.user
             image.publish()
             image.save()
-            return redirect('image_detail', pk=image.pk)
+            return render(request, 'imageboard/image_detail.html',
+                          {'image': image})
     else:
         form = ImageForm()
     return render(request, 'imageboard/image_upload.html', {'form': form})

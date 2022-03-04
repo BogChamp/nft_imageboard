@@ -5,8 +5,8 @@ from django.conf.urls.static import static
 
 urlpatterns = [
     path('board', views.image_list, name='image_list'),
-    path('image/<str:image_token>/', views.image_detail, name='image_detail'),
     path('image/new/', views.image_new, name='image_new'),
+    path('image/<str:image_token>/', views.image_detail, name='image_detail'),
     path('login', views.login_request, name='login'),
     path('registration', views.register_request, name='registration'),
     path('profile', views.profile, name="profile"),
