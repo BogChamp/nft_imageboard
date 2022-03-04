@@ -58,3 +58,11 @@ class Preference(models.Model):
 
     class Meta:
         unique_together = ("user", "image")
+
+class UserInfo(models.Model):
+    user = models.ForeignKey(settings.AUTH_USER_MODEL,
+                             on_delete=models.CASCADE)
+    name = models.CharField(max_length=20, blank=True)
+    second_name = models.CharField(max_length=20, blank=True)
+    avatar = models.ImageField(blank=True)
+    info = models.CharField(max_length=500, blank=True)

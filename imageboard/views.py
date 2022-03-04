@@ -3,7 +3,7 @@ from .models import Image, History, Preference
 from django.http import HttpResponse
 from .forms import *
 from django.utils import timezone
-from .forms import NewUserForm
+from .forms import NewUserForm, UserInfoForm
 from django.contrib.auth import login
 from django.contrib import messages
 from django.contrib.auth import login, authenticate
@@ -34,7 +34,7 @@ def image_new(request):
                 image.save()
                 return image_detail(request, image.token)
             else:
-                messages.error(request, "Not unique image")
+                messages.error(request, "This image already exists")
                 return render(request, 'imageboard/image_upload.html',
                               {'form': form})
     else:
@@ -52,7 +52,7 @@ def login_request(request):
             if user is not None:
                 login(request, user)
                 messages.info(request, f"You are now logged in as {username}.")
-                return redirect('profile')
+                return redirect('profile', user.id)
             else:
                 messages.error(request, "Invalid username or password.")
         else:
@@ -66,22 +66,18 @@ def login_request(request):
 def register_request(request):
     if request.method == "POST":
         form = NewUserForm(request.POST)
-        print(form)
         if form.is_valid():
             user = form.save()
             login(request, user)
             messages.success(request, "Registration successful.")
-            return redirect("profile")
+            UserInfo.objects.create(user=request.user).save()
+            return redirect("profile", user.id)
         messages.error(request,
                        "Unsuccessful registration. Invalid information.")
     form = NewUserForm()
     return render(request=request,
                   template_name="imageboard/registration.html",
                   context={"register_form": form})
-
-
-def profile(request):
-    return render(request, 'imageboard/profile.html')
 
 
 def image_preference(request, image_token):
@@ -103,3 +99,20 @@ def image_preference(request, image_token):
     else:
         image = get_object_or_404(Image, token=image_token)
         return image_detail(request, image.token)
+        
+def profile(request, id):
+    user_info = UserInfo.objects.get(id=id)
+    form = UserInfoForm(instance=user_info)
+    if request.method == "POST":
+        form = UserInfoForm(request.POST, instance=user_info)
+        if form.is_valid():
+            form.save()
+            return render(request, 'imageboard/profile.html', {'user_info': user_info, 'form': form})
+        messages.error(request,
+                       "AAA.")
+    user_info = get_object_or_404(UserInfo, pk=id) 
+    return render(request, 'imageboard/profile.html', {'user_info': user_info, 'form': form})
+
+
+
+    
