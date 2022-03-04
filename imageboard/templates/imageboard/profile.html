@@ -5,6 +5,31 @@
     <title>Profile</title>
 </head>
 <body>
-
+        <p>Name: {{user_info.name}}  
+        <form method = "post" enctype="multipart/form-data">
+            {% csrf_token %}
+            {{form.name}} 
+            <button type="submit">Change</button>
+        </form></p>
+        <p>Second Name: {{user_info.second_name}}
+            <form method = "post" enctype="multipart/form-data">
+                {% csrf_token %}
+                {{form.second_name}} 
+                <button type="submit">Change</button>
+            </form>
+        </p>
+        <p>{{ user_info.avatar }}
+            <form method = "post" enctype="multipart/form-data">
+                {% csrf_token %}
+                {{form.avatar}} 
+                <button type="submit">Change</button>
+            </form>
+        </p>
+        <p>About me: {{user_info.info}}
+            <form method = "post" enctype="multipart/form-data">
+            {% csrf_token %}
+            {{form.info}} 
+            <button type="submit">Change</button>
+        </form></p>
 </body>
 </html>

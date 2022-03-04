@@ -1,7 +1,7 @@
 from django import forms
 from django.contrib.auth.models import User
 from django.contrib.auth.forms import UserCreationForm
-from .models import Image
+from .models import Image, UserInfo
 
 
 class ImageForm(forms.ModelForm):
@@ -21,3 +21,8 @@ class NewUserForm(UserCreationForm):
         if commit:
             user.save()
         return user
+
+class UserInfoForm(forms.ModelForm):
+    class Meta:
+        model = UserInfo
+        fields = ('name', 'second_name', 'avatar', 'info')

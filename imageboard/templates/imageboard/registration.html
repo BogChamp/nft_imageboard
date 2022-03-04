@@ -47,10 +47,11 @@
         <p>
             <button class="btn btn-primary" type="submit">Register</button>
         </p>
+
     </form>
-    <p class="text-center">If you already have an account, <a href="/login">login</a>
+    <p class="text-center">If you already have an account, <a href="/">login</a>
         instead.</p>
-    {% if messages %}
+        {% if messages %}
         <b>
             <ul class="messages">
                 {% for message in messages %}
@@ -60,6 +61,7 @@
             </ul>
         </b>
     {% endif %}
+
 </div>
 
 
