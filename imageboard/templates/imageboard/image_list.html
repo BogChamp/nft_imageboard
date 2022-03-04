@@ -17,15 +17,10 @@
 {% for image in images %}
     <div>
         <h1>
-            <a href="{% url 'image_detail' pk=image.pk %}">{{ image.title }}</a>
+            <a href="{% url 'image_detail' image_token=image.token %}">{{ image.title }}</a>
         </h1>
         <p>owner: {{ image.owner }}</p>
         <img src="{{ image.image.url }}" width="200px" height="200px">
-        <p>
-            <button type="button"><i class="fa fa-thumbs-up"
-                                     style="font-size:20px;color:black;"></i> {{ image.likes }}
-            </button>
-        </p>
     </div>
 {% endfor %}
 </body>

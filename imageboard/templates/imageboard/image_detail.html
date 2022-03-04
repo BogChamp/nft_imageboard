@@ -16,6 +16,17 @@
     <p>Published date: {{ image.published_date }}</p>
     <img src="{{ image.image.url }}" width="200px" height="200px">
     <p>Likes: {{ image.likes }}</p>
+    <p>
+            <a href="#"
+               onClick="document.getElementById('likebutton').submit()">Like
+                This Image</a> {{ image.likes }}
+
+        <form id="likebutton" method="POST"
+              action="/image/{{ image.token }}/preference/">
+            {% csrf_token %}
+            <input type="hidden">
+        </form>
+        </p>
 </div>
 </body>
 </html>

@@ -1,5 +1,5 @@
 from django.shortcuts import render, get_object_or_404, redirect
-from .models import Image
+from .models import Image, History, Preference
 from django.http import HttpResponse
 from .forms import *
 from django.utils import timezone
@@ -9,13 +9,14 @@ from django.contrib import messages
 from django.contrib.auth import login, authenticate
 from django.contrib.auth.forms import AuthenticationForm
 
+
 def image_list(request):
     images = Image.objects.filter(public=True).order_by('likes')
     return render(request, 'imageboard/image_list.html', {'images': images})
 
 
-def image_detail(request, pk):
-    image = get_object_or_404(Image, pk=pk)
+def image_detail(request, image_token):
+    image = get_object_or_404(Image, token=image_token)
     return render(request, 'imageboard/image_detail.html', {'image': image})
 
 
@@ -72,3 +73,27 @@ def register_request(request):
 
 def profile(request):
     return render(request, 'imageboard/profile.html')
+
+
+def image_preference(request, image_token):
+    if request.method == "POST":
+        image = get_object_or_404(Image, token=image_token)
+
+        try:
+            Preference.objects.get(user=request.user, image=image)
+            return render(request, 'imageboard/image_detail.html',
+                          {'image': image})
+
+        except Preference.DoesNotExist:
+            upref = Preference()
+            upref.user = request.user
+            upref.image = image
+            image.likes += 1
+            upref.save()
+            image.save()
+            return render(request, 'imageboard/image_detail.html',
+                          {'image': image})
+    else:
+        image = get_object_or_404(Image, token=image_token)
+        return render(request, 'imageboard/image_detail.html',
+                      {'image': image})
