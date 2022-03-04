@@ -11,7 +11,7 @@
 }
 
 @font-face {
-  font-family: Ubuntu-Bold;
+  font-family: Ubuntu-Bold;s
   src: url('../fonts/ubuntu/Ubuntu-Bold.ttf'); 
 }
 
@@ -30,6 +30,7 @@
 body, html {
 	height: 100%;
 	font-family: Ubuntu-Regular, sans-serif;
+  background-color: #d4d4d4;
 }
 
 /*---------------------------------------------*/
@@ -76,12 +77,10 @@ ul, li {
 /*---------------------------------------------*/
 input {
 	outline: none;
-	border: none;
 }
 
 textarea {
   outline: none;
-  border: none;
 }
 
 textarea:focus, input:focus {

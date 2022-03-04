@@ -34,7 +34,7 @@ def image_new(request):
                 image.save()
                 return image_detail(request, image.token)
             else:
-                messages.error(request, "Not unique image")
+                messages.error(request, "This image already exists")
                 return render(request, 'imageboard/image_upload.html',
                               {'form': form})
     else:
