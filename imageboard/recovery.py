@@ -1,6 +1,7 @@
 import random
 from os import path, getcwd
 
+
 def generate_secret():
     module_dir = path.dirname(__file__)
     file_path = path.join(module_dir, 'word_list.txt')

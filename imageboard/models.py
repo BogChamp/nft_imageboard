@@ -34,6 +34,13 @@ class Image(models.Model):
             history_log.save()
             return True
 
+    def recover(self, secret_hash):
+        print(f'model.py: {secret_hash}')
+        if Image.objects.filter(secret=secret_hash).exists():
+            return True
+        else:
+            return False
+
     def __str__(self):
         return self.title
 

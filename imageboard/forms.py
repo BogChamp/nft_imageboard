@@ -26,3 +26,8 @@ class UserInfoForm(forms.ModelForm):
     class Meta:
         model = UserInfo
         fields = ('name', 'second_name', 'avatar', 'info')
+
+class RecoveryForm(forms.ModelForm):
+    class Meta:
+        model = Image
+        fields = ('secret',)

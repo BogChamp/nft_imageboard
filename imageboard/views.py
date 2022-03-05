@@ -11,7 +11,6 @@ from django.contrib.auth.forms import AuthenticationForm
 from . import recovery
 from hashlib import sha256
 
-
 def image_list(request):
     images = Image.objects.filter(public=True).order_by('likes')
     return render(request, 'imageboard/image_list.html', {'images': images})
@@ -34,6 +33,7 @@ def image_new(request):
             image.owner = request.user
             secret = recovery.generate_secret()
             secret_str = recovery.get_str_secret(secret)
+            print(secret_str) # TODO
             if image.publish():
                 image.secret = sha256(secret_str.encode()).hexdigest()
                 image.save()
@@ -119,3 +119,19 @@ def profile(request, id):
                        "AAA.")
     user_info = get_object_or_404(UserInfo, pk=id) 
     return render(request, 'imageboard/profile.html', {'user_info': user_info, 'form': form, 'pics': user_pics})
+
+def image_recover(request):
+    if request.method == "POST":
+        form = RecoveryForm(request.POST)
+        if form.is_valid():
+            secret_str = form.cleaned_data.get('secret')
+            secret = sha256(secret_str.encode()).hexdigest()
+            owner = request.user
+            if Image().recover(secret):
+                messages.success(request, "Recovery successful")
+            else:
+                messages.error(request, "Rejected")
+            return render(request, 'imageboard/recovery.html', {'form': form})
+    else:
+        form = RecoveryForm()
+    return render(request, 'imageboard/recovery.html', {'form': form})
