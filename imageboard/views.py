@@ -8,6 +8,8 @@ from django.contrib.auth import login
 from django.contrib import messages
 from django.contrib.auth import login, authenticate
 from django.contrib.auth.forms import AuthenticationForm
+from . import recovery
+from hashlib import sha256
 
 
 def image_list(request):
@@ -30,7 +32,10 @@ def image_new(request):
         if form.is_valid():
             image = form.save(commit=False)
             image.owner = request.user
+            secret = recovery.generate_secret()
+            secret_str = recovery.get_str_secret(secret)
             if image.publish():
+                image.secret = sha256(secret_str.encode()).hexdigest()
                 image.save()
                 return image_detail(request, image.token)
             else:
@@ -114,7 +119,3 @@ def profile(request, id):
                        "AAA.")
     user_info = get_object_or_404(UserInfo, pk=id) 
     return render(request, 'imageboard/profile.html', {'user_info': user_info, 'form': form, 'pics': user_pics})
-
-
-
-    
