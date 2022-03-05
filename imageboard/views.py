@@ -16,13 +16,13 @@ def image_list(request):
     return render(request, 'imageboard/image_list.html', {'images': images})
 
 
-def image_detail(request, image_token):
+def image_detail(request, image_token, secret_str=''):
     image = get_object_or_404(Image, token=image_token)
     history = History.objects.filter(image=image).order_by('date')
     preferences = Preference.objects.filter(image=image).order_by('date')
     return render(request, 'imageboard/image_detail.html',
                   {'image': image, 'history': history,
-                   'preferences': preferences})
+                   'preferences': preferences, 'secret_str': secret_str})
 
 
 def image_new(request):
@@ -33,11 +33,10 @@ def image_new(request):
             image.owner = request.user
             secret = recovery.generate_secret()
             secret_str = recovery.get_str_secret(secret)
-            print(secret_str) # TODO
             if image.publish():
                 image.secret = sha256(secret_str.encode()).hexdigest()
                 image.save()
-                return image_detail(request, image.token)
+                return image_detail(request, image.token, secret_str)
             else:
                 messages.error(request, "This image already exists")
                 return render(request, 'imageboard/image_upload.html',

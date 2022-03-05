@@ -35,7 +35,6 @@ class Image(models.Model):
             return True
 
     def recover(self, secret_hash):
-        print(f'model.py: {secret_hash}')
         if Image.objects.filter(secret=secret_hash).exists():
             return True
         else:
