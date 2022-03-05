@@ -12,7 +12,7 @@ from . import recovery
 from hashlib import sha256
 
 def image_list(request):
-    images = Image.objects.filter(public=True).order_by('likes')
+    images = Image.objects.filter(public=True).order_by('-likes')
     return render(request, 'imageboard/image_list.html', {'images': images})
 
 
@@ -35,6 +35,7 @@ def image_new(request):
             secret_str = recovery.get_str_secret(secret)
             if image.publish():
                 image.secret = sha256(secret_str.encode()).hexdigest()
+                image.public = form.cleaned_data.get('public')
                 image.save()
                 return image_detail(request, image.token, secret_str)
             else:
@@ -125,8 +126,17 @@ def image_recover(request):
         if form.is_valid():
             secret_str = form.cleaned_data.get('secret')
             secret = sha256(secret_str.encode()).hexdigest()
-            owner = request.user
             if Image().recover(secret):
+                image = Image.objects.get(secret=secret)
+                image.owner = request.user
+                image.date_last_own = timezone.now()
+                image.save()
+                history_log = History.objects.create(
+                    owner=request.user,
+                    image=image,
+                    date=image.date_last_own
+                )
+                history_log.save()
                 messages.success(request, "Recovery successful")
             else:
                 messages.error(request, "Rejected")
