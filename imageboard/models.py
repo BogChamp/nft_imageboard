@@ -11,7 +11,7 @@ class Image(models.Model):
     title = models.CharField(max_length=200)
     image = models.ImageField(upload_to='images/')
     token = models.CharField(max_length=200)
-    secret = models.CharField(blank=False, max_length=64)  #TODO collisions
+    secret = models.CharField(blank=False, max_length=256)
     likes = models.IntegerField(default=0)
     public = models.BooleanField()
     date_last_own = models.DateTimeField(blank=True, null=True)
