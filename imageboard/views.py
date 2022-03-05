@@ -11,19 +11,18 @@ from django.contrib.auth.forms import AuthenticationForm
 from . import recovery
 from hashlib import sha256
 
-
 def image_list(request):
     images = Image.objects.filter(public=True).order_by('likes')
     return render(request, 'imageboard/image_list.html', {'images': images})
 
 
-def image_detail(request, image_token):
+def image_detail(request, image_token, secret_str=''):
     image = get_object_or_404(Image, token=image_token)
     history = History.objects.filter(image=image).order_by('date')
     preferences = Preference.objects.filter(image=image).order_by('date')
     return render(request, 'imageboard/image_detail.html',
                   {'image': image, 'history': history,
-                   'preferences': preferences})
+                   'preferences': preferences, 'secret_str': secret_str})
 
 
 def image_new(request):
@@ -37,7 +36,7 @@ def image_new(request):
             if image.publish():
                 image.secret = sha256(secret_str.encode()).hexdigest()
                 image.save()
-                return image_detail(request, image.token)
+                return image_detail(request, image.token, secret_str)
             else:
                 messages.error(request, "This image already exists")
                 return render(request, 'imageboard/image_upload.html',
@@ -119,3 +118,19 @@ def profile(request, id):
                        "AAA.")
     user_info = get_object_or_404(UserInfo, pk=id) 
     return render(request, 'imageboard/profile.html', {'user_info': user_info, 'form': form, 'pics': user_pics})
+
+def image_recover(request):
+    if request.method == "POST":
+        form = RecoveryForm(request.POST)
+        if form.is_valid():
+            secret_str = form.cleaned_data.get('secret')
+            secret = sha256(secret_str.encode()).hexdigest()
+            owner = request.user
+            if Image().recover(secret):
+                messages.success(request, "Recovery successful")
+            else:
+                messages.error(request, "Rejected")
+            return render(request, 'imageboard/recovery.html', {'form': form})
+    else:
+        form = RecoveryForm()
+    return render(request, 'imageboard/recovery.html', {'form': form})

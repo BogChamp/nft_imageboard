@@ -45,6 +45,11 @@
     <h1>{{ image.title }}</h1>
     <h2>Token: {{ image.token }}</h2>
     <p> <b>Owner:</b> {{ image.owner }}</p>
+    {% if secret_str != '' %}
+        <p> <b>Secret:</b> {{ secret_str }}</p>
+    {% else %}
+        <p> <b>Secret:</b>****</p>
+    {% endif %}
     <p> <b>Published date:</b> {{ image.date_last_own }}</p>
     <img src="{{ image.image.url }}" width="200px" height="200px">
     <p>

@@ -11,7 +11,7 @@ class Image(models.Model):
     title = models.CharField(max_length=200)
     image = models.ImageField(upload_to='images/')
     token = models.CharField(max_length=200)
-    secret = models.CharField(blank=False, max_length=64)  #TODO collisions
+    secret = models.CharField(blank=False, max_length=256)
     likes = models.IntegerField(default=0)
     public = models.BooleanField()
     date_last_own = models.DateTimeField(blank=True, null=True)
@@ -33,6 +33,12 @@ class Image(models.Model):
             )
             history_log.save()
             return True
+
+    def recover(self, secret_hash):
+        if Image.objects.filter(secret=secret_hash).exists():
+            return True
+        else:
+            return False
 
     def __str__(self):
         return self.title
