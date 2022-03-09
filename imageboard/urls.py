@@ -9,6 +9,7 @@ urlpatterns = [
     path('image/<str:image_token>/', views.image_detail, name='image_detail'),
     path('profile/recovery', views.image_recover, name='recover'),
     path('', views.login_request, name='login'),
+    path('login', views.login_request, name='login'),
     path('registration', views.register_request, name='registration'),
     path('profile/<int:id>', views.profile, name="profile"),
     path('image/<str:image_token>/preference/', views.image_preference,
