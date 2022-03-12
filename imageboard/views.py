@@ -1,6 +1,6 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from .models import Image, History, Preference
-from django.http import HttpResponse
+from django.http import HttpResponse, HttpResponseForbidden
 from .forms import *
 from django.utils import timezone
 from .forms import NewUserForm, UserInfoForm
@@ -18,6 +18,8 @@ def image_list(request):
 
 def image_detail(request, image_token, secret_str=''):
     image = get_object_or_404(Image, token=image_token)
+    if not image.public and image.owner != request.user:
+        return HttpResponseForbidden()
     history = History.objects.filter(image=image).order_by('date')
     preferences = Preference.objects.filter(image=image).order_by('date')
     return render(request, 'imageboard/image_detail.html',
@@ -108,6 +110,8 @@ def image_preference(request, image_token):
 
 def profile(request, id):
     user_info = UserInfo.objects.get(id=id)
+    if user_info.user != request.user:
+        return render(request, 'imageboard/profile.html', {'user_info': user_info})
     form = UserInfoForm()
     user_pics = Image.objects.filter(owner=request.user)
     if request.method == "POST":
