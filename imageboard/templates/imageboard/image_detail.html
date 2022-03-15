@@ -44,7 +44,7 @@
 <div>
     <h1>{{ image.title }}</h1>
     <h2>Token: {{ image.token }}</h2>
-    <p> <b>Owner:</b> {{ image.owner }}</p>
+    <p> <b>Owner:</b> <a href="/profile/{{ image.owner.id }}">{{ image.owner }}</a></p>
     {% if secret_str != '' %}
         <p> <b>Secret:</b> {{ secret_str }}</p>
     {% else %}
