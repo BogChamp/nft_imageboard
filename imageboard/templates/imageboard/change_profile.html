@@ -2,7 +2,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <title>Profile</title>
+    <title>Change profile</title>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <!--===============================================================================================-->
@@ -38,23 +38,29 @@
     <!--===============================================================================================-->
 </head>
 <body>
-<h1>{{ user_info.user }}</h1>
-<p><a href="/board">To the Top Images</a></p>
-<p><a href="/change_profile">My profile</a></p>
-<div>
-    <h2>Name:</h2> {{ user_info.name }}
-    <h2>Second Name:</h2> {{ user_info.second_name }}
-    <p>{{ user_info.avatar }}</p>
-    <h2>About me:</h2> {{ user_info.info }}
+<div class="container py-5">
+    <h1>{{ user_info.user }}</h1>
+    <p><a href="/board">To the Top Images</a></p>
+    <h2>Name:</h2>{{ user_info.name }} <br>
+    <a class="btn btn-primary" href="/change_profile_name">Change name</a>
+    <br>
+    <h2>Second Name:</h2> {{ user_info.second_name }} <br>
+    <a class="btn btn-primary" href="/change_profile_second_name">Change
+        second name</a>
+    <br>
+    <h2>About me:</h2> {{ user_info.info }} <br>
+    <a class="btn btn-primary" href="/change_profile_info">Change info
+        about me</a>
+    <br>
+    <br>
+    <p>
+        <a class="btn btn-primary" href="/image/new">Add images</a>
+    </p>
+    <br>
+    <p>
+        <a class="btn btn-primary" href="/profile/recovery">Recover Image</a>
+    </p>
 </div>
-<h2>This user images:</h2>
-{% for pic in pics %}
-    <div>
-        <a href="{% url 'image_detail' image_token=pic.token %}">
-            <h1>{{ pic.title }}</h1></a>
-        <img src="{{ pic.image.url }}" width="200px" height="200px">
-    </div>
-{% endfor %}
 
 <div id="dropDownSelect1"></div>
 

@@ -1,8 +1,9 @@
 {% load static %}
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <title>Profile</title>
+	<title>Change profile info</title>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <!--===============================================================================================-->
@@ -36,43 +37,49 @@
     <link rel="stylesheet" type="text/css" href="{% static 'css/util.css' %}">
     <link rel="stylesheet" type="text/css" href="{% static 'css/main.css' %}">
     <!--===============================================================================================-->
+
 </head>
 <body>
-<h1>{{ user_info.user }}</h1>
-<p><a href="/board">To the Top Images</a></p>
-<p><a href="/change_profile">My profile</a></p>
-<div>
-    <h2>Name:</h2> {{ user_info.name }}
-    <h2>Second Name:</h2> {{ user_info.second_name }}
-    <p>{{ user_info.avatar }}</p>
-    <h2>About me:</h2> {{ user_info.info }}
-</div>
-<h2>This user images:</h2>
-{% for pic in pics %}
-    <div>
-        <a href="{% url 'image_detail' image_token=pic.token %}">
-            <h1>{{ pic.title }}</h1></a>
-        <img src="{{ pic.image.url }}" width="200px" height="200px">
-    </div>
-{% endfor %}
+	<div class="container py-5">
+		<h1>Change profile info</h1>
+		<form method="POST" enctype="multipart/form-data">
+			{% csrf_token %}
+			{{ change_info_form }}
+			<p>
+				<button class="btn btn-primary" type="submit">Change</button>
+			</p>
+		</form>
+		{% if messages %}
+			<b>
+				<ul class="messages">
+					{% for message in messages %}
+						<li{% if message.tags %}
+							class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+					{% endfor %}
+				</ul>
+			</b>
+		{% endif %}
+	</div>
 
-<div id="dropDownSelect1"></div>
+	<div id="dropDownSelect1"></div>
 
-<!--===============================================================================================-->
-<script src="{% static 'vendor/jquery/jquery-3.2.1.min.js' %}"></script>
-<!--===============================================================================================-->
-<script src="{% static 'vendor/animsition/js/animsition.min.js' %}"></script>
-<!--===============================================================================================-->
-<script src="{% static 'vendor/bootstrap/js/popper.js' %}"></script>
-<script src="{% static 'vendor/bootstrap/js/bootstrap.min.js' %}"></script>
-<!--===============================================================================================-->
-<script src="{% static 'vendor/select2/select2.min.js' %}"></script>
-<!--===============================================================================================-->
-<script src="{% static 'vendor/daterangepicker/moment.min.js' %}"></script>
-<script src="{% static 'vendor/daterangepicker/daterangepicker.js' %}"></script>
-<!--===============================================================================================-->
-<script src="{% static 'vendor/countdowntime/countdowntime.js' %}"></script>
-<!--===============================================================================================-->
-<script src="{% static 'js/main.js' %}"></script>
+	<!--===============================================================================================-->
+	<script src="{% static 'vendor/jquery/jquery-3.2.1.min.js' %}"></script>
+	<!--===============================================================================================-->
+	<script src="{% static 'vendor/animsition/js/animsition.min.js' %}"></script>
+	<!--===============================================================================================-->
+	<script src="{% static 'vendor/bootstrap/js/popper.js' %}"></script>
+	<script src="{% static 'vendor/bootstrap/js/bootstrap.min.js' %}"></script>
+	<!--===============================================================================================-->
+	<script src="{% static 'vendor/select2/select2.min.js' %}"></script>
+	<!--===============================================================================================-->
+	<script src="{% static 'vendor/daterangepicker/moment.min.js' %}"></script>
+	<script src="{% static 'vendor/daterangepicker/daterangepicker.js' %}"></script>
+	<!--===============================================================================================-->
+	<script src="{% static 'vendor/countdowntime/countdowntime.js' %}"></script>
+	<!--===============================================================================================-->
+	<script src="{% static 'js/main.js' %}"></script>
+
+
 </body>
 </html>

@@ -11,7 +11,6 @@ class ImageForm(forms.ModelForm):
 
 
 class NewUserForm(UserCreationForm):
-
     class Meta:
         model = User
         fields = ("username", "password1", "password2")
@@ -23,10 +22,23 @@ class NewUserForm(UserCreationForm):
         return user
 
 
+class UserNameForm(forms.ModelForm):
+    class Meta:
+        model = UserInfo
+        fields = ('name',)
+
+
+class UserSecondNameForm(forms.ModelForm):
+    class Meta:
+        model = UserInfo
+        fields = ('second_name',)
+
+
 class UserInfoForm(forms.ModelForm):
     class Meta:
         model = UserInfo
-        fields = ('name', 'second_name', 'avatar', 'info')
+        fields = ('info',)
+
 
 class RecoveryForm(forms.ModelForm):
     class Meta:

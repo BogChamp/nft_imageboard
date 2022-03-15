@@ -11,6 +11,7 @@ from django.contrib.auth.forms import AuthenticationForm
 from . import recovery
 from hashlib import sha256
 
+
 def image_list(request):
     images = Image.objects.filter(public=True).order_by('-likes')
     return render(request, 'imageboard/image_list.html', {'images': images})
@@ -76,7 +77,6 @@ def register_request(request):
         if form.is_valid():
             user = form.save()
             login(request, user)
-            messages.success(request, "Registration successful.")
             UserInfo.objects.create(user=request.user).save()
             return redirect("profile", user.id)
         messages.error(request,
@@ -111,18 +111,60 @@ def image_preference(request, image_token):
 def profile(request, id):
     user_info = UserInfo.objects.get(id=id)
     if user_info.user != request.user:
-        return render(request, 'imageboard/profile.html', {'user_info': user_info})
-    form = UserInfoForm()
-    user_pics = Image.objects.filter(owner=request.user)
+        user_pics = Image.objects.filter(owner=user_info.user).filter(
+            public=True).order_by('-likes')
+    else:
+        user_pics = Image.objects.filter(owner=user_info.user).order_by(
+            '-likes')
+    user_info = get_object_or_404(UserInfo, pk=id)
+    return render(request, 'imageboard/profile.html',
+                  {'user_info': user_info, 'pics': user_pics})
+
+
+def change_profile(request):
+    user_info = UserInfo.objects.get(user=request.user)
+    return render(request, 'imageboard/change_profile.html',
+                  {'user_info': user_info})
+
+
+def change_profile_info(request):
+    user_info = UserInfo.objects.get(user=request.user)
     if request.method == "POST":
         form = UserInfoForm(request.POST, instance=user_info)
         if form.is_valid():
             form.save()
-            return render(request, 'imageboard/profile.html', {'user_info': user_info, 'form': form, 'pics': user_pics})
-        messages.error(request,
-                       "AAA.")
-    user_info = get_object_or_404(UserInfo, pk=id) 
-    return render(request, 'imageboard/profile.html', {'user_info': user_info, 'form': form, 'pics': user_pics})
+            return redirect('change_profile')
+    form = UserInfoForm()
+    return render(request=request,
+                  template_name="imageboard/change_profile_info.html",
+                  context={"change_info_form": form})
+
+
+def change_profile_name(request):
+    user_info = UserInfo.objects.get(user=request.user)
+    if request.method == "POST":
+        form = UserNameForm(request.POST, instance=user_info)
+        if form.is_valid():
+            form.save()
+            return redirect('change_profile')
+    form = UserNameForm()
+    return render(request=request,
+                  template_name="imageboard/change_profile_name.html",
+                  context={"change_name_form": form})
+
+
+def change_profile_second_name(request):
+    user_info = UserInfo.objects.get(user=request.user)
+    if request.method == "POST":
+        form = UserSecondNameForm(request.POST, instance=user_info)
+        if form.is_valid():
+            form.save()
+            return redirect('change_profile')
+    form = UserSecondNameForm()
+    return render(request=request,
+                  template_name="imageboard/change_profile_second_name.html",
+                  context={"change_second_name_form": form})
+
 
 def image_recover(request):
     if request.method == "POST":

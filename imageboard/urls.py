@@ -13,6 +13,13 @@ urlpatterns = [
     path('profile/<int:id>', views.profile, name="profile"),
     path('image/<str:image_token>/preference/', views.image_preference,
          name='image_preference'),
+    path('change_profile_info', views.change_profile_info,
+         name='change_profile_info'),
+    path('change_profile_name', views.change_profile_name,
+         name='change_profile_name'),
+    path('change_profile_second_name', views.change_profile_second_name,
+         name='change_profile_second_name'),
+    path('change_profile', views.change_profile, name='change_profile'),
 ]
 
 if settings.DEBUG:
