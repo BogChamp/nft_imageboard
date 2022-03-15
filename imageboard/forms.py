@@ -22,6 +22,7 @@ class NewUserForm(UserCreationForm):
             user.save()
         return user
 
+
 class UserInfoForm(forms.ModelForm):
     class Meta:
         model = UserInfo
