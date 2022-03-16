@@ -97,6 +97,12 @@ def image_likes(request, image_token):
     return redirect('image_info', image.token)
 
 
+def my_profile(request):
+    if not User.objects.filter(id=request.user.id).exists():
+        return HttpResponseForbidden()
+    return redirect("profile", request.user.id)
+
+
 def profile(request, id):
     user_info = get_object_or_404(UserInfo, pk=id) 
     

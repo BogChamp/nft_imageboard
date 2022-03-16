@@ -13,6 +13,7 @@ urlpatterns = [
     path('registration', views.register_request, name='registration'),
     path('profile/<int:id>', views.profile, name="profile"),
     path('profile/<int:id>/change_profile/', views.change_profile, name="change_profile"),
+    path('my_profile/', views.my_profile, name="my_profile"),
     path('image/<str:image_token>/likes/', views.image_likes,
          name='image_likes'),
 ]

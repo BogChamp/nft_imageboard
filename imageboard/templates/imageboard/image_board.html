@@ -41,6 +41,9 @@
 
 </head>
 <body>
+      <div>
+            <a href="/my_profile">My page</a>
+      </div>
 <div>
       <a href="{% url 'image_upload' %}" class="top-menu">
         <span class="glyphicon glyphicon-plus">Upload Image</span>
@@ -51,8 +54,8 @@
     <div>
         <a href="{% url 'image_info' image_token=image.token %}">
             <h1>{{ image.title }}</h1></a>
-
-        <p>owner: {{ image.owner }}</p>
+            
+        <p>owner:<a href="profile/{{ image.owner.id }}">{{ image.owner }}</a></p>
         <img src="{{ image.image.url }}" width="200px" height="200px">
     </div>
 {% endfor %}

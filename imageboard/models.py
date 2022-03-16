@@ -66,8 +66,8 @@ class Image_Likes(models.Model):
 
 
 class UserInfo(models.Model):
-    user = models.ForeignKey(settings.AUTH_USER_MODEL,
-                             on_delete=models.CASCADE)
+    user = models.OneToOneField(settings.AUTH_USER_MODEL,
+                             on_delete=models.CASCADE, unique=True)
     name = models.CharField(max_length=20, blank=True)
     second_name = models.CharField(max_length=20, blank=True)
     info = models.CharField(max_length=500, blank=True)

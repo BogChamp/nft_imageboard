@@ -52,11 +52,14 @@
                 </ul>
             </b>
     {% endif %}
-
+    
+    <div>
+        <a href="/my_profile">My page</a>
+    </div>
 
     <h1>{{ image.title }}</h1>
     <h2>Token: {{ image.token }}</h2>
-    <p> <b>Owner:</b> {{ image.owner }}</p>
+    <p> <b>Owner:</b> <a href="/profile/{{ image.owner.id }}">{{ image.owner }}</a></p>
     
     <p> <b>Published date:</b> {{ image.date_last_own }}</p>
     <img src="{{ image.image.url }}" width="200px" height="200px">
