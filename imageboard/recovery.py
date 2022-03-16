@@ -8,7 +8,7 @@ def generate_secret():
     f = open(file_path, 'r')
     word_list = f.read().splitlines()
     random.seed()
-    secret = [word_list[random.randint(0,2047)] for i in range(12)]
+    secret = [word_list[random.randint(0,2047)] for _ in range(12)]
     f.close()
     return secret
 

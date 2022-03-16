@@ -14,25 +14,23 @@ class Image(models.Model):
     secret = models.CharField(blank=False, max_length=256)
     likes = models.IntegerField(default=0)
     public = models.BooleanField()
-    date_last_own = models.DateTimeField(blank=True, null=True)
 
     def publish(self):
-        self.date_last_own = timezone.now()
-        self.likes = 0
-        self.public = True
         image_hash_obj = Image_hash.open(self.image)
         self.token = imagehash.average_hash(image_hash_obj)
         if Image.objects.filter(token=self.token).exists():
             return False
-        else:
-            self.save()
-            history_log = History.objects.create(
-                owner=self.owner,
-                image=self,
-                date=self.date_last_own
-            )
-            history_log.save()
-            return True
+        
+        self.likes = 0
+        self.public = True
+        self.save()
+        history_log = History.objects.create(
+            owner=self.owner,
+            image=self,
+            date=timezone.now()
+        )
+        history_log.save()
+        return True
 
     def recover(self, secret_hash):
         if Image.objects.filter(secret=secret_hash).exists():
@@ -54,7 +52,7 @@ class History(models.Model):
         return str(self.owner) + ' : ' + str(self.date)
 
 
-class Preference(models.Model):
+class Image_Likes(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL,
                              on_delete=models.CASCADE)
     image = models.ForeignKey(Image, on_delete=models.CASCADE)
@@ -72,5 +70,5 @@ class UserInfo(models.Model):
                              on_delete=models.CASCADE)
     name = models.CharField(max_length=20, blank=True)
     second_name = models.CharField(max_length=20, blank=True)
-    avatar = models.ImageField(blank=True)
     info = models.CharField(max_length=500, blank=True)
+

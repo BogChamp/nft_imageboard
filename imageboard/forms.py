@@ -26,7 +26,7 @@ class NewUserForm(UserCreationForm):
 class UserInfoForm(forms.ModelForm):
     class Meta:
         model = UserInfo
-        fields = ('name', 'second_name', 'avatar', 'info')
+        fields = ('name', 'second_name', 'info')
 
 class RecoveryForm(forms.ModelForm):
     class Meta:

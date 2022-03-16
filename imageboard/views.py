@@ -1,5 +1,5 @@
 from django.shortcuts import render, get_object_or_404, redirect
-from .models import Image, History, Preference
+from .models import Image, History, Image_Likes
 from django.http import HttpResponse, HttpResponseForbidden
 from .forms import *
 from django.utils import timezone
@@ -11,23 +11,23 @@ from django.contrib.auth.forms import AuthenticationForm
 from . import recovery
 from hashlib import sha256
 
-def image_list(request):
+def image_board(request):
     images = Image.objects.filter(public=True).order_by('-likes')
-    return render(request, 'imageboard/image_list.html', {'images': images})
+    return render(request, 'imageboard/image_board.html', {'images': images})
 
 
-def image_detail(request, image_token, secret_str=''):
+def image_info(request, image_token):
     image = get_object_or_404(Image, token=image_token)
     if not image.public and image.owner != request.user:
         return HttpResponseForbidden()
-    history = History.objects.filter(image=image).order_by('date')
-    preferences = Preference.objects.filter(image=image).order_by('date')
-    return render(request, 'imageboard/image_detail.html',
+    history = History.objects.filter(image=image).order_by('-date')
+    likes = Image_Likes.objects.filter(image=image).order_by('-date')
+    return render(request, 'imageboard/image_info.html',
                   {'image': image, 'history': history,
-                   'preferences': preferences, 'secret_str': secret_str})
+                   'likes': likes})
 
 
-def image_new(request):
+def image_upload(request):
     if request.method == 'POST':
         form = ImageForm(request.POST, request.FILES)
         if form.is_valid():
@@ -39,13 +39,14 @@ def image_new(request):
                 image.secret = sha256(secret_str.encode()).hexdigest()
                 image.public = form.cleaned_data.get('public')
                 image.save()
-                return image_detail(request, image.token, secret_str)
+                messages.info(request, secret_str)
+                return redirect("image_info", image.token)
             else:
                 messages.error(request, "This image already exists")
                 return render(request, 'imageboard/image_upload.html',
                               {'form': form})
-    else:
-        form = ImageForm()
+    
+    form = ImageForm()
     return render(request, 'imageboard/image_upload.html', {'form': form})
 
 
@@ -63,11 +64,10 @@ def login_request(request):
             else:
                 messages.error(request, "Invalid username or password.")
         else:
-            messages.error(request, "Invalid username or password.")
+            messages.error(request, "Invalid form.")
+    
     form = AuthenticationForm()
-    return render(request=request,
-                  template_name='imageboard/login.html',
-                  context={"login_form": form})
+    return render(request, 'imageboard/login.html', {"login_form": form})
 
 
 def register_request(request):
@@ -75,54 +75,62 @@ def register_request(request):
         form = NewUserForm(request.POST)
         if form.is_valid():
             user = form.save()
-            login(request, user)
+            UserInfo.objects.create(user=user).save()
             messages.success(request, "Registration successful.")
-            UserInfo.objects.create(user=request.user).save()
-            return redirect("profile", user.id)
+            return redirect("login")
         messages.error(request,
                        "Unsuccessful registration. Invalid information.")
     form = NewUserForm()
-    return render(request=request,
-                  template_name="imageboard/registration.html",
-                  context={"register_form": form})
+    return render(request, "imageboard/registration.html", {"register_form": form})
 
 
-def image_preference(request, image_token):
-    if request.method == "POST":
-        image = get_object_or_404(Image, token=image_token)
+def image_likes(request, image_token):
+    image = get_object_or_404(Image, token=image_token)
+    if request.method != "POST":
+        return redirect('image_info', image.token)
 
-        try:
-            Preference.objects.get(user=request.user, image=image)
-            return image_detail(request, image.token)
+    if not Image_Likes.objects.filter(user=request.user, image=image).exists():
+        Image_Likes.objects.create(user=request.user, image=image).save()
+        image.likes += 1
+        image.save()
 
-        except Preference.DoesNotExist:
-            upref = Preference()
-            upref.user = request.user
-            upref.image = image
-            image.likes += 1
-            upref.save()
-            image.save()
-            return image_detail(request, image.token)
-    else:
-        image = get_object_or_404(Image, token=image_token)
-        return image_detail(request, image.token)
+    return redirect('image_info', image.token)
 
 
 def profile(request, id):
-    user_info = UserInfo.objects.get(id=id)
-    if user_info.user != request.user:
-        return render(request, 'imageboard/profile.html', {'user_info': user_info})
-    form = UserInfoForm()
-    user_pics = Image.objects.filter(owner=request.user)
-    if request.method == "POST":
-        form = UserInfoForm(request.POST, instance=user_info)
-        if form.is_valid():
-            form.save()
-            return render(request, 'imageboard/profile.html', {'user_info': user_info, 'form': form, 'pics': user_pics})
-        messages.error(request,
-                       "AAA.")
     user_info = get_object_or_404(UserInfo, pk=id) 
-    return render(request, 'imageboard/profile.html', {'user_info': user_info, 'form': form, 'pics': user_pics})
+    
+    if user_info.user != request.user:
+        user_pics = Image.objects.filter(owner=id, public=True)
+        return render(request, 'imageboard/other_profile.html', {'user_info':user_info, 'pics':user_pics})
+    
+    user_pics = Image.objects.filter(owner=id)
+    return render(request, 'imageboard/profile.html', {'user_info': user_info, 'pics': user_pics})
+
+
+def change_profile(request, id):
+    user_info = get_object_or_404(UserInfo, pk=id)
+  
+    if user_info.user != request.user:
+        return HttpResponseForbidden()
+
+    if request.method != "POST":
+        form = UserInfoForm(instance=user_info)
+        return render(request, 'imageboard/change_profile.html', {'form':form})
+    
+    form = UserInfoForm(request.POST)
+    if form.is_valid():
+        user_info = UserInfo.objects.get(user=request.user)
+        user_info.name = form.cleaned_data.get('name')
+        user_info.second_name = form.cleaned_data.get('second_name')
+        user_info.info = form.cleaned_data.get('info')
+        user_info.save()
+        messages.success(request, "Info changed successfully!")
+        return redirect('profile', id)
+    
+    messages.error(request, "Something went wrong(")
+    return render(request, 'imageboard/change_profile.html', {'form':form})
+
 
 def image_recover(request):
     if request.method == "POST":
@@ -132,19 +140,18 @@ def image_recover(request):
             secret = sha256(secret_str.encode()).hexdigest()
             if Image().recover(secret):
                 image = Image.objects.get(secret=secret)
-                image.owner = request.user
-                image.date_last_own = timezone.now()
+                image.owner = request.user 
                 image.save()
                 history_log = History.objects.create(
                     owner=request.user,
                     image=image,
-                    date=image.date_last_own
+                    date=timezone.now()
                 )
                 history_log.save()
                 messages.success(request, "Recovery successful")
             else:
                 messages.error(request, "Rejected")
             return render(request, 'imageboard/recovery.html', {'form': form})
-    else:
-        form = RecoveryForm()
+    
+    form = RecoveryForm()
     return render(request, 'imageboard/recovery.html', {'form': form})
