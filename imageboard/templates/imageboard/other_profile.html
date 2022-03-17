@@ -1,0 +1,28 @@
+{%load static%}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Profile</title>
+</head>
+<body>
+    <div>
+        <a href="/my_profile">My page</a>
+    </div>
+
+        <p>Name: {{user_info.name}}</p>  
+        <p>Second Name: {{user_info.second_name}}</p>
+        <p>{{ user_info.avatar }}</p>
+        <p>About me: {{user_info.info}}</p>
+        <div>
+            <a href="/board">Top Images</a>
+        </div>
+        {% for pic in pics %}
+            <div>
+            <a href="{% url 'image_info' image_token=pic.token %}">
+                <h1>{{ pic.title }}</h1></a>
+            <img src="{{ pic.image.url }}" width="200px" height="200px">
+            </div>
+        {% endfor %}
+</body>
+</html>

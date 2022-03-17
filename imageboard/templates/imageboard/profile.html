@@ -1,0 +1,47 @@
+{%load static%}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Profile</title>
+</head>
+<body>
+    {% if messages %}
+    <b>
+        <ul class="messages">
+            {% for message in messages %}
+                <li{% if message.tags %}
+                    class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+            {% endfor %}
+        </ul>
+    </b>
+    {% endif %}
+
+        <p>Name: {{user_info.name}}</p>
+        <p>Second Name: {{user_info.second_name}}</p>
+        <p>About me: {{user_info.info}}</p>
+        <div>
+            <a href="/profile/{{user_info.id}}/change_profile">Change profile info</a>
+        </div>
+        <div>
+            <a href="/my_profile">My page</a>
+        </div>
+        <div>
+            <a href="/board">Top Images</a>
+        </div>
+        {% for pic in pics %}
+            <div>
+            <a href="{% url 'image_info' image_token=pic.token %}">
+                <h1>{{ pic.title }}</h1></a>
+            <img src="{{ pic.image.url }}" width="200px" height="200px">
+            </div>
+        {% endfor %}
+        <p>
+            <a class="btn btn-primary" href="/image/upload">Add images</a>
+        </p>
+
+        <p>
+            <a class="btn btn-primary" href="/profile/recovery">Recover Image</a>
+        </p>
+</body>
+</html>
