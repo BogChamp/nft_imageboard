@@ -22,65 +22,72 @@ def image_info(request, image_token):
         return HttpResponseForbidden()
     history = History.objects.filter(image=image).order_by('-date')
     likes = Image_Likes.objects.filter(image=image).order_by('-date')
-    return render(request, 'imageboard/image_info.html',
-                  {'image': image, 'history': history,
+    return render(request, 'imageboard/image_info.html', 
+                {'image': image, 'history': history,
                    'likes': likes})
 
 
 def image_upload(request):
-    if request.method == 'POST':
-        form = ImageForm(request.POST, request.FILES)
-        if form.is_valid():
-            image = form.save(commit=False)
-            image.owner = request.user
-            secret = recovery.generate_secret()
-            secret_str = recovery.get_str_secret(secret)
-            if image.publish():
-                image.secret = sha256(secret_str.encode()).hexdigest()
-                image.public = form.cleaned_data.get('public')
-                image.save()
-                messages.info(request, secret_str)
-                return redirect("image_info", image.token)
-            else:
-                messages.error(request, "This image already exists")
-                return render(request, 'imageboard/image_upload.html',
-                              {'form': form})
+    if request.method != 'POST':
+        form = ImageForm()
+        return render(request, 'imageboard/image_upload.html', {'form': form})
     
-    form = ImageForm()
+    form = ImageForm(request.POST, request.FILES)
+    if not form.is_valid():
+        messages.error(request, "Invalid form!")
+        return render(request, 'imageboard/image_upload.html', {'form': form})
+
+    image = form.save(commit=False)
+    image.owner = request.user
+    secret = recovery.generate_secret()
+    secret_str = recovery.get_str_secret(secret)
+    if image.publish():
+        image.secret = sha256(secret_str.encode()).hexdigest()
+        image.public = form.cleaned_data.get('public')
+        image.save()
+        messages.info(request, secret_str)
+        return redirect("image_info", image.token)
+
+    messages.error(request, "This image already exists")
     return render(request, 'imageboard/image_upload.html', {'form': form})
 
 
 def login_request(request):
-    if request.method == "POST":
-        form = AuthenticationForm(request, data=request.POST)
-        if form.is_valid():
-            username = form.cleaned_data.get('username')
-            password = form.cleaned_data.get('password')
-            user = authenticate(username=username, password=password)
-            if user is not None:
-                login(request, user)
-                messages.info(request, f"You are now logged in as {username}.")
-                return redirect('profile', user.id)
-            else:
-                messages.error(request, "Invalid username or password.")
-        else:
-            messages.error(request, "Invalid username or password.")
-    form = AuthenticationForm()
-    return render(request, 'imageboard/login.html', {"login_form": form})
+    if request.method != "POST":
+        form = AuthenticationForm()
+        return render(request, 'imageboard/login.html', {"login_form": form})
+    
+    form = AuthenticationForm(request, data=request.POST)
+    if not form.is_valid():
+        messages.error(request, "Invalid username or password.")
+        return render(request, 'imageboard/login.html', {"login_form": form})
+    
+    username = form.cleaned_data.get('username')
+    password = form.cleaned_data.get('password')
+    user = authenticate(username=username, password=password)
+    if user is None:
+        messages.error(request, "Invalid username or password.")
+        return render(request, 'imageboard/login.html', {"login_form": form})
+    
+    login(request, user)
+    messages.info(request, f"You are now logged in as {username}.")
+    return redirect('profile', user.id)        
 
 
 def register_request(request):
-    if request.method == "POST":
-        form = NewUserForm(request.POST)
-        if form.is_valid():
-            user = form.save()
-            UserInfo.objects.create(user=user).save()
-            messages.success(request, "Registration successful.")
-            return redirect("login")
-        messages.error(request,
-                       "Unsuccessful registration. Invalid information.")
-    form = NewUserForm()
-    return render(request, "imageboard/registration.html", {"register_form": form})
+    if request.method != "POST":
+        form = NewUserForm()
+        return render(request, "imageboard/registration.html", {"register_form": form})
+    
+    form = NewUserForm(request.POST)
+    if not form.is_valid():
+        messages.error(request, "Unsuccessful registration. Invalid information.")
+        return render(request, "imageboard/registration.html", {"register_form": form})
+    
+    user = form.save()
+    UserInfo.objects.create(user=user).save()
+    messages.success(request, "Registration successful.")
+    return redirect("login")
 
 
 def image_likes(request, image_token):
@@ -165,8 +172,3 @@ def image_recover(request):
     messages.success(request, "Recovery successful")
     return redirect('profile', request.user.id)
             
-    
-
-    
-    
-    
