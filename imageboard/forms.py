@@ -1,4 +1,5 @@
 from django import forms
+from captcha.fields import CaptchaField
 from django.contrib.auth.models import User
 from django.contrib.auth.forms import UserCreationForm
 from .models import Image, UserInfo
@@ -11,6 +12,7 @@ class ImageForm(forms.ModelForm):
 
 
 class NewUserForm(UserCreationForm):
+    captcha = CaptchaField()
     class Meta:
         model = User
         fields = ("username", "password1", "password2")
@@ -26,6 +28,7 @@ class UserInfoForm(forms.ModelForm):
     class Meta:
         model = UserInfo
         fields = ('name', 'second_name', 'info')
+
 
 class RecoveryForm(forms.ModelForm):
     class Meta:
