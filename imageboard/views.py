@@ -50,8 +50,6 @@ def image_upload(request):
 
     messages.error(request, "This image already exists")
     return render(request, 'imageboard/image_upload.html', {'form': form})
-    
-    
 
 
 def login_request(request):
@@ -83,16 +81,13 @@ def register_request(request):
     
     form = NewUserForm(request.POST)
     if not form.is_valid():
-        messages.error(request,
-                    "Unsuccessful registration. Invalid information.")
+        messages.error(request, "Unsuccessful registration. Invalid information.")
         return render(request, "imageboard/registration.html", {"register_form": form})
     
     user = form.save()
     UserInfo.objects.create(user=user).save()
     messages.success(request, "Registration successful.")
     return redirect("login")
-    
-    
 
 
 def image_likes(request, image_token):
