@@ -64,8 +64,7 @@ def login_request(request):
             else:
                 messages.error(request, "Invalid username or password.")
         else:
-            messages.error(request, "Invalid form.")
-    
+            messages.error(request, "Invalid username or password.")
     form = AuthenticationForm()
     return render(request, 'imageboard/login.html', {"login_form": form})
 

@@ -11,7 +11,6 @@ class ImageForm(forms.ModelForm):
 
 
 class NewUserForm(UserCreationForm):
-
     class Meta:
         model = User
         fields = ("username", "password1", "password2")
