@@ -165,8 +165,3 @@ def image_recover(request):
     messages.success(request, "Recovery successful")
     return redirect('profile', request.user.id)
             
-    
-
-    
-    
-    
