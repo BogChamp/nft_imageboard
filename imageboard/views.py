@@ -22,32 +22,36 @@ def image_info(request, image_token):
         return HttpResponseForbidden()
     history = History.objects.filter(image=image).order_by('-date')
     likes = Image_Likes.objects.filter(image=image).order_by('-date')
-    return render(request, 'imageboard/image_info.html',
-                  {'image': image, 'history': history,
+    return render(request, 'imageboard/image_info.html', 
+                {'image': image, 'history': history,
                    'likes': likes})
 
 
 def image_upload(request):
-    if request.method == 'POST':
-        form = ImageForm(request.POST, request.FILES)
-        if form.is_valid():
-            image = form.save(commit=False)
-            image.owner = request.user
-            secret = recovery.generate_secret()
-            secret_str = recovery.get_str_secret(secret)
-            if image.publish():
-                image.secret = sha256(secret_str.encode()).hexdigest()
-                image.public = form.cleaned_data.get('public')
-                image.save()
-                messages.info(request, secret_str)
-                return redirect("image_info", image.token)
-            else:
-                messages.error(request, "This image already exists")
-                return render(request, 'imageboard/image_upload.html',
-                              {'form': form})
+    if request.method != 'POST':
+        form = ImageForm()
+        return render(request, 'imageboard/image_upload.html', {'form': form})
     
-    form = ImageForm()
+    form = ImageForm(request.POST, request.FILES)
+    if not form.is_valid():
+        messages.error(request, "Invalid form!")
+        return render(request, 'imageboard/image_upload.html', {'form': form})
+
+    image = form.save(commit=False)
+    image.owner = request.user
+    secret = recovery.generate_secret()
+    secret_str = recovery.get_str_secret(secret)
+    if image.publish():
+        image.secret = sha256(secret_str.encode()).hexdigest()
+        image.public = form.cleaned_data.get('public')
+        image.save()
+        messages.info(request, secret_str)
+        return redirect("image_info", image.token)
+
+    messages.error(request, "This image already exists")
     return render(request, 'imageboard/image_upload.html', {'form': form})
+    
+    
 
 
 def login_request(request):
