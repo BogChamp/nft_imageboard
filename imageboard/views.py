@@ -51,36 +51,44 @@ def image_upload(request):
 
 
 def login_request(request):
-    if request.method == "POST":
-        form = AuthenticationForm(request, data=request.POST)
-        if form.is_valid():
-            username = form.cleaned_data.get('username')
-            password = form.cleaned_data.get('password')
-            user = authenticate(username=username, password=password)
-            if user is not None:
-                login(request, user)
-                messages.info(request, f"You are now logged in as {username}.")
-                return redirect('profile', user.id)
-            else:
-                messages.error(request, "Invalid username or password.")
-        else:
-            messages.error(request, "Invalid username or password.")
-    form = AuthenticationForm()
-    return render(request, 'imageboard/login.html', {"login_form": form})
+    if request.method != "POST":
+        form = AuthenticationForm()
+        return render(request, 'imageboard/login.html', {"login_form": form})
+    
+    form = AuthenticationForm(request, data=request.POST)
+    if not form.is_valid():
+        messages.error(request, "Invalid username or password.")
+        return render(request, 'imageboard/login.html', {"login_form": form})
+    
+    username = form.cleaned_data.get('username')
+    password = form.cleaned_data.get('password')
+    user = authenticate(username=username, password=password)
+    if user is None:
+        messages.error(request, "Invalid username or password.")
+        return render(request, 'imageboard/login.html', {"login_form": form})
+    
+    login(request, user)
+    messages.info(request, f"You are now logged in as {username}.")
+    return redirect('profile', user.id)        
 
 
 def register_request(request):
-    if request.method == "POST":
-        form = NewUserForm(request.POST)
-        if form.is_valid():
-            user = form.save()
-            UserInfo.objects.create(user=user).save()
-            messages.success(request, "Registration successful.")
-            return redirect("login")
+    if request.method != "POST":
+        form = NewUserForm()
+        return render(request, "imageboard/registration.html", {"register_form": form})
+    
+    form = NewUserForm(request.POST)
+    if not form.is_valid():
         messages.error(request,
-                       "Unsuccessful registration. Invalid information.")
-    form = NewUserForm()
-    return render(request, "imageboard/registration.html", {"register_form": form})
+                    "Unsuccessful registration. Invalid information.")
+        return render(request, "imageboard/registration.html", {"register_form": form})
+    
+    user = form.save()
+    UserInfo.objects.create(user=user).save()
+    messages.success(request, "Registration successful.")
+    return redirect("login")
+    
+    
 
 
 def image_likes(request, image_token):
