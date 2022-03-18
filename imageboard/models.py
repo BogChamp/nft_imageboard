@@ -70,5 +70,6 @@ class UserInfo(models.Model):
                              on_delete=models.CASCADE, unique=True)
     name = models.CharField(max_length=20, blank=True)
     second_name = models.CharField(max_length=20, blank=True)
+    avatar = models.ImageField(blank=True)
     info = models.CharField(max_length=500, blank=True)
 
