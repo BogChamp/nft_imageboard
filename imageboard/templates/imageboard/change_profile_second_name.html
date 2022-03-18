@@ -3,7 +3,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <title>{{ image.title }}</title>
+	<title>Change profile second name</title>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <!--===============================================================================================-->
@@ -38,59 +38,48 @@
     <link rel="stylesheet" type="text/css" href="{% static 'css/main.css' %}">
     <!--===============================================================================================-->
 
-
 </head>
 <body>
-<div>
-    {% if messages %}
-            <b>
-                <ul class="messages">
-                    {% for message in messages %}
-                        <li{% if message.tags %}
-                            class="{{ message.tags }}"{% endif %}>{{ message }}</li>
-                    {% endfor %}
-                </ul>
-            </b>
-    {% endif %}
-    
-    <div>
-        <a href="/my_profile">My page</a>
-    </div>
+	<div class="container py-5">
+		<h1>Change profile second name</h1>
+		<form method="POST" enctype="multipart/form-data">
+			{% csrf_token %}
+			{{ change_second_name_form }}
+			<p>
+				<button class="btn btn-primary" type="submit">Change</button>
+			</p>
+		</form>
+		{% if messages %}
+			<b>
+				<ul class="messages">
+					{% for message in messages %}
+						<li{% if message.tags %}
+							class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+					{% endfor %}
+				</ul>
+			</b>
+		{% endif %}
+	</div>
 
-    <h1>{{ image.title }}</h1>
-    <h2>Token: {{ image.token }}</h2>
-    <p> <b>Owner:</b> <a href="/profile/{{ image.owner.id }}">{{ image.owner }}</a></p>
-    
-    <p> <b>Published date:</b> {{ image.date_last_own }}</p>
-    <img src="{{ image.image.url }}" width="200px" height="200px">
-    <p>
-        <i onClick="document.getElementById('likebutton').submit()"
-           class="fa fa-thumbs-up"
-           style="font-size: 60px;cursor: pointer;user-select: none;"></i> {{ image.likes }}
+	<div id="dropDownSelect1"></div>
 
-    <form id="likebutton" method="POST"
-          action="/image/{{ image.token }}/likes/">
-        {% csrf_token %}
-        <input type="hidden">
-    </form>
-    </p>
-    <p>
-        <b> Users who liked this image: </b>
-        {% for like in likes %}
-            <div>
-                <p> {{ like.user }} </p>
-            </div>
-        {% endfor %}
-    </p>
-    <p>
-        <b> History of owning this image: </b>
-        {% for history_log in history %}
-            <div>
-                <p> {{ history_log }} </p>
-            </div>
-        {% endfor %}
-    </p>
-    <p><a href="/board">Back to board</a></p>
-</div>
+	<!--===============================================================================================-->
+	<script src="{% static 'vendor/jquery/jquery-3.2.1.min.js' %}"></script>
+	<!--===============================================================================================-->
+	<script src="{% static 'vendor/animsition/js/animsition.min.js' %}"></script>
+	<!--===============================================================================================-->
+	<script src="{% static 'vendor/bootstrap/js/popper.js' %}"></script>
+	<script src="{% static 'vendor/bootstrap/js/bootstrap.min.js' %}"></script>
+	<!--===============================================================================================-->
+	<script src="{% static 'vendor/select2/select2.min.js' %}"></script>
+	<!--===============================================================================================-->
+	<script src="{% static 'vendor/daterangepicker/moment.min.js' %}"></script>
+	<script src="{% static 'vendor/daterangepicker/daterangepicker.js' %}"></script>
+	<!--===============================================================================================-->
+	<script src="{% static 'vendor/countdowntime/countdowntime.js' %}"></script>
+	<!--===============================================================================================-->
+	<script src="{% static 'js/main.js' %}"></script>
+
+
 </body>
 </html>

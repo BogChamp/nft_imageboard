@@ -64,8 +64,7 @@ def login_request(request):
             else:
                 messages.error(request, "Invalid username or password.")
         else:
-            messages.error(request, "Invalid form.")
-    
+            messages.error(request, "Invalid username or password.")
     form = AuthenticationForm()
     return render(request, 'imageboard/login.html', {"login_form": form})
 
@@ -139,25 +138,35 @@ def change_profile(request, id):
 
 
 def image_recover(request):
-    if request.method == "POST":
-        form = RecoveryForm(request.POST)
-        if form.is_valid():
-            secret_str = form.cleaned_data.get('secret')
-            secret = sha256(secret_str.encode()).hexdigest()
-            if Image().recover(secret):
-                image = Image.objects.get(secret=secret)
-                image.owner = request.user 
-                image.save()
-                history_log = History.objects.create(
-                    owner=request.user,
-                    image=image,
-                    date=timezone.now()
-                )
-                history_log.save()
-                messages.success(request, "Recovery successful")
-            else:
-                messages.error(request, "Rejected")
-            return render(request, 'imageboard/recovery.html', {'form': form})
+    if request.method != "POST":
+        form = RecoveryForm()
+        return render(request, 'imageboard/recovery.html', {'form': form})
     
-    form = RecoveryForm()
-    return render(request, 'imageboard/recovery.html', {'form': form})
+    form = RecoveryForm(request.POST)
+    if not form.is_valid():
+        messages.error(request, "Invalid form.")
+        return render(request, 'imageboard/recovery.html', {'form': form})
+    
+    secret_str = form.cleaned_data.get('secret')
+    secret = sha256(secret_str.encode()).hexdigest()
+    if not Image().recover(secret):
+        messages.error(request, "Rejected")
+        return render(request, 'imageboard/recovery.html', {'form': form})
+    
+    image = Image.objects.get(secret=secret)
+    image.owner = request.user 
+    image.save()
+    history_log = History.objects.create(
+        owner=request.user,
+        image=image,
+        date=timezone.now()
+    )
+    history_log.save()
+    messages.success(request, "Recovery successful")
+    return redirect('profile', request.user.id)
+            
+    
+
+    
+    
+    
