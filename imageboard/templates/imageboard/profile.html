@@ -31,9 +31,17 @@
         </div>
         {% for pic in pics %}
             <div>
-            <a href="{% url 'image_info' image_token=pic.token %}">
-                <h1>{{ pic.title }}</h1></a>
-            <img src="{{ pic.image.url }}" width="200px" height="200px">
+            <a href="{% url 'image_info' image_token=pic.0.token %}">
+                <h1>{{pic.0.title}}</h1></a>
+            <img src="{{ pic.0.image.url }}" width="200px" height="200px">
+            <form method="POST" action="/image/{{pic.0.token}}/">
+                {% csrf_token %}
+                {{ pic.1.public }}
+                {{ pic.1.public.label }}
+                <p>
+                    <button class="btn btn-primary" type="submit">Change</button>
+                </p>
+            </form>
             </div>
         {% endfor %}
         <p>

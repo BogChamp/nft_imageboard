@@ -3,7 +3,7 @@ from .models import Image, History, Image_Likes
 from django.http import HttpResponse, HttpResponseForbidden
 from .forms import *
 from django.utils import timezone
-from .forms import NewUserForm, UserInfoForm
+from .forms import NewUserForm, UserInfoForm, PublicityForm
 from django.contrib.auth import login
 from django.contrib import messages
 from django.contrib.auth import login, authenticate
@@ -22,9 +22,19 @@ def image_info(request, image_token):
         return HttpResponseForbidden()
     history = History.objects.filter(image=image).order_by('-date')
     likes = Image_Likes.objects.filter(image=image).order_by('-date')
-    return render(request, 'imageboard/image_info.html', 
+    if request.method != 'POST' or request.user != image.owner:
+        return render(request, 'imageboard/image_info.html', 
                 {'image': image, 'history': history,
                    'likes': likes})
+
+    data = PublicityForm(request.POST)
+    if not data.is_valid():
+        messages.error(request, "Wrong form of publicity.")
+        return redirect('my_profile')
+
+    image.public = data.cleaned_data.get('public')
+    image.save()
+    return redirect('my_profile')
 
 
 def image_upload(request):
@@ -117,7 +127,8 @@ def profile(request, id):
         return render(request, 'imageboard/other_profile.html', {'user_info':user_info, 'pics':user_pics})
     
     user_pics = Image.objects.filter(owner=id)
-    return render(request, 'imageboard/profile.html', {'user_info': user_info, 'pics': user_pics})
+    pics_forms = [PublicityForm(instance=image) for image in user_pics]
+    return render(request, 'imageboard/profile.html', {'user_info': user_info, 'pics': zip(user_pics, pics_forms)})
 
 
 def change_profile(request, id):
