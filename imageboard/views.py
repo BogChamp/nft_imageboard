@@ -105,7 +105,7 @@ def image_likes(request, image_token):
 
 def my_profile(request):
     if not User.objects.filter(id=request.user.id).exists():
-        return HttpResponseForbidden()
+        return redirect('login')
     return redirect("profile", request.user.id)
 
 
