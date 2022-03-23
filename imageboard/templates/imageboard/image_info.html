@@ -43,25 +43,26 @@
 <body>
 <div>
     {% if messages %}
-            <b>
-                <ul class="messages">
-                    {% for message in messages %}
-                        <li{% if message.tags %}
-                            class="{{ message.tags }}"{% endif %}>{{ message }}</li>
-                    {% endfor %}
-                </ul>
-            </b>
+        <b>
+            <ul class="messages">
+                {% for message in messages %}
+                    <li{% if message.tags %}
+                        class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+                {% endfor %}
+            </ul>
+        </b>
     {% endif %}
-    
+
     <div>
         <a href="/my_profile">My page</a>
     </div>
 
     <h1>{{ image.title }}</h1>
     <h2>Token: {{ image.token }}</h2>
-    <p> <b>Owner:</b> <a href="/profile/{{ image.owner.id }}">{{ image.owner }}</a></p>
-    
-    <p> <b>Published date:</b> {{ image.date_last_own }}</p>
+    <p><b>Owner:</b> <a
+            href="/profile/{{ image.owner.id }}">{{ image.owner }}</a></p>
+
+    <p><b>Published date:</b> {{ image.date_last_own }}</p>
     <img src="{{ image.image.url }}" width="200px" height="200px">
     <p>
         <i onClick="document.getElementById('likebutton').submit()"
@@ -92,5 +93,23 @@
     </p>
     <p><a href="/board">Back to board</a></p>
 </div>
+
+<!--===============================================================================================-->
+<script src="{% static 'vendor/jquery/jquery-3.2.1.min.js' %}"></script>
+<!--===============================================================================================-->
+<script src="{% static 'vendor/animsition/js/animsition.min.js' %}"></script>
+<!--===============================================================================================-->
+<script src="{% static 'vendor/bootstrap/js/popper.js' %}"></script>
+<script src="{% static 'vendor/bootstrap/js/bootstrap.min.js' %}"></script>
+<!--===============================================================================================-->
+<script src="{% static 'vendor/select2/select2.min.js' %}"></script>
+<!--===============================================================================================-->
+<script src="{% static 'vendor/daterangepicker/moment.min.js' %}"></script>
+<script src="{% static 'vendor/daterangepicker/daterangepicker.js' %}"></script>
+<!--===============================================================================================-->
+<script src="{% static 'vendor/countdowntime/countdowntime.js' %}"></script>
+<!--===============================================================================================-->
+<script src="{% static 'js/main.js' %}"></script>
+
 </body>
 </html>

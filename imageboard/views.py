@@ -11,6 +11,7 @@ from django.contrib.auth.forms import AuthenticationForm
 from . import recovery
 from hashlib import sha256
 
+
 def image_board(request):
     images = Image.objects.filter(public=True).order_by('-likes')
     return render(request, 'imageboard/image_board.html', {'images': images})
@@ -23,9 +24,9 @@ def image_info(request, image_token):
     history = History.objects.filter(image=image).order_by('-date')
     likes = Image_Likes.objects.filter(image=image).order_by('-date')
     if request.method != 'POST' or request.user != image.owner:
-        return render(request, 'imageboard/image_info.html', 
-                {'image': image, 'history': history,
-                   'likes': likes})
+        return render(request, 'imageboard/image_info.html',
+                      {'image': image, 'history': history,
+                       'likes': likes})
 
     data = PublicityForm(request.POST)
     if not data.is_valid():
@@ -41,7 +42,7 @@ def image_upload(request):
     if request.method != 'POST':
         form = ImageForm()
         return render(request, 'imageboard/image_upload.html', {'form': form})
-    
+
     form = ImageForm(request.POST, request.FILES)
     if not form.is_valid():
         messages.error(request, "Invalid form!")
@@ -66,34 +67,37 @@ def login_request(request):
     if request.method != "POST":
         form = AuthenticationForm()
         return render(request, 'imageboard/login.html', {"login_form": form})
-    
+
     form = AuthenticationForm(request, data=request.POST)
     if not form.is_valid():
         messages.error(request, "Invalid username or password.")
         return render(request, 'imageboard/login.html', {"login_form": form})
-    
+
     username = form.cleaned_data.get('username')
     password = form.cleaned_data.get('password')
     user = authenticate(username=username, password=password)
     if user is None:
         messages.error(request, "Invalid username or password.")
         return render(request, 'imageboard/login.html', {"login_form": form})
-    
+
     login(request, user)
     messages.info(request, f"You are now logged in as {username}.")
-    return redirect('profile', user.id)        
+    return redirect('profile', user.id)
 
 
 def register_request(request):
     if request.method != "POST":
         form = NewUserForm()
-        return render(request, "imageboard/registration.html", {"register_form": form})
-    
+        return render(request, "imageboard/registration.html",
+                      {"register_form": form})
+
     form = NewUserForm(request.POST)
     if not form.is_valid():
-        messages.error(request, "Unsuccessful registration. Invalid information.")
-        return render(request, "imageboard/registration.html", {"register_form": form})
-    
+        messages.error(request,
+                       "Unsuccessful registration. Invalid information.")
+        return render(request, "imageboard/registration.html",
+                      {"register_form": form})
+
     user = form.save()
     UserInfo.objects.create(user=user).save()
     messages.success(request, "Registration successful.")
@@ -120,27 +124,30 @@ def my_profile(request):
 
 
 def profile(request, id):
-    user_info = get_object_or_404(UserInfo, pk=id) 
-    
+    user_info = get_object_or_404(UserInfo, pk=id)
+
     if user_info.user != request.user:
         user_pics = Image.objects.filter(owner=id, public=True)
-        return render(request, 'imageboard/other_profile.html', {'user_info':user_info, 'pics':user_pics})
-    
+        return render(request, 'imageboard/other_profile.html',
+                      {'user_info': user_info, 'pics': user_pics})
+
     user_pics = Image.objects.filter(owner=id)
     pics_forms = [PublicityForm(instance=image) for image in user_pics]
-    return render(request, 'imageboard/profile.html', {'user_info': user_info, 'pics': zip(user_pics, pics_forms)})
+    return render(request, 'imageboard/profile.html',
+                  {'user_info': user_info, 'pics': zip(user_pics, pics_forms)})
 
 
 def change_profile(request, id):
     user_info = get_object_or_404(UserInfo, pk=id)
-  
+
     if user_info.user != request.user:
         return HttpResponseForbidden()
 
     if request.method != "POST":
         form = UserInfoForm(instance=user_info)
-        return render(request, 'imageboard/change_profile.html', {'form':form})
-    
+        return render(request, 'imageboard/change_profile.html',
+                      {'form': form})
+
     form = UserInfoForm(request.POST)
     if form.is_valid():
         user_info = UserInfo.objects.get(user=request.user)
@@ -150,29 +157,29 @@ def change_profile(request, id):
         user_info.save()
         messages.success(request, "Info changed successfully!")
         return redirect('profile', id)
-    
+
     messages.error(request, "Something went wrong(")
-    return render(request, 'imageboard/change_profile.html', {'form':form})
+    return render(request, 'imageboard/change_profile.html', {'form': form})
 
 
 def image_recover(request):
     if request.method != "POST":
         form = RecoveryForm()
         return render(request, 'imageboard/recovery.html', {'form': form})
-    
+
     form = RecoveryForm(request.POST)
     if not form.is_valid():
         messages.error(request, "Invalid form.")
         return render(request, 'imageboard/recovery.html', {'form': form})
-    
+
     secret_str = form.cleaned_data.get('secret')
     secret = sha256(secret_str.encode()).hexdigest()
     if not Image().recover(secret):
         messages.error(request, "Rejected")
         return render(request, 'imageboard/recovery.html', {'form': form})
-    
+
     image = Image.objects.get(secret=secret)
-    image.owner = request.user 
+    image.owner = request.user
     image.save()
     history_log = History.objects.create(
         owner=request.user,
@@ -182,4 +189,3 @@ def image_recover(request):
     history_log.save()
     messages.success(request, "Recovery successful")
     return redirect('profile', request.user.id)
-            

@@ -20,7 +20,7 @@ class Image(models.Model):
         self.token = imagehash.average_hash(image_hash_obj)
         if Image.objects.filter(token=self.token).exists():
             return False
-        
+
         self.likes = 0
         self.public = True
         self.save()
@@ -67,9 +67,8 @@ class Image_Likes(models.Model):
 
 class UserInfo(models.Model):
     user = models.OneToOneField(settings.AUTH_USER_MODEL,
-                             on_delete=models.CASCADE, unique=True)
+                                on_delete=models.CASCADE, unique=True)
     name = models.CharField(max_length=20, blank=True)
     second_name = models.CharField(max_length=20, blank=True)
     avatar = models.ImageField(blank=True)
     info = models.CharField(max_length=500, blank=True)
-
