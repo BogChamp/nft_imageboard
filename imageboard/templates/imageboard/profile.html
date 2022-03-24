@@ -68,7 +68,7 @@
         <a href="{% url 'image_info' image_token=pic.0.token %}">
             <h1>{{ pic.0.title }}</h1></a>
         <img src="{{ pic.0.image.url }}" width="200px" height="200px">
-        <form method="POST" action="/image/{{ pic.0.token }}/">
+        <form method="POST" action="/privacy/{{ pic.0.token }}">
             {% csrf_token %}
             {{ pic.1.public }}
             {{ pic.1.public.label }}

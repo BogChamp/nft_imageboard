@@ -36,7 +36,7 @@ class RecoveryForm(forms.ModelForm):
         fields = ('secret',)
 
 
-class PublicityForm(forms.ModelForm):
+class PrivacyForm(forms.ModelForm):
     class Meta:
         model = Image
         fields = ('public',)

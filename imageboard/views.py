@@ -3,7 +3,7 @@ from .models import Image, History, Image_Likes
 from django.http import HttpResponse, HttpResponseForbidden
 from .forms import *
 from django.utils import timezone
-from .forms import NewUserForm, UserInfoForm, PublicityForm
+from .forms import NewUserForm, UserInfoForm, PrivacyForm
 from django.contrib.auth import login
 from django.contrib import messages
 from django.contrib.auth import login, authenticate
@@ -23,19 +23,9 @@ def image_info(request, image_token):
         return HttpResponseForbidden()
     history = History.objects.filter(image=image).order_by('-date')
     likes = Image_Likes.objects.filter(image=image).order_by('-date')
-    if request.method != 'POST' or request.user != image.owner:
-        return render(request, 'imageboard/image_info.html',
+    return render(request, 'imageboard/image_info.html',
                       {'image': image, 'history': history,
                        'likes': likes})
-
-    data = PublicityForm(request.POST)
-    if not data.is_valid():
-        messages.error(request, "Wrong form of publicity.")
-        return redirect('my_profile')
-
-    image.public = data.cleaned_data.get('public')
-    image.save()
-    return redirect('my_profile')
 
 
 def image_upload(request):
@@ -132,7 +122,7 @@ def profile(request, id):
                       {'user_info': user_info, 'pics': user_pics})
 
     user_pics = Image.objects.filter(owner=id)
-    pics_forms = [PublicityForm(instance=image) for image in user_pics]
+    pics_forms = [PrivacyForm(instance=image) for image in user_pics]
     return render(request, 'imageboard/profile.html',
                   {'user_info': user_info, 'pics': zip(user_pics, pics_forms)})
 
@@ -189,3 +179,21 @@ def image_recover(request):
     history_log.save()
     messages.success(request, "Recovery successful")
     return redirect('profile', request.user.id)
+
+
+def change_privacy(request, image_token):
+    image = get_object_or_404(Image, token=image_token)
+    if request.user != image.owner:
+        return HttpResponseForbidden()
+    
+    if request.method != "POST":
+        return redirect('my_profile')
+
+    data = PrivacyForm(request.POST)
+    if not data.is_valid():
+        messages.error(request, "Wrong form of publicity.")
+        return redirect('my_profile')
+
+    image.public = data.cleaned_data.get('public')
+    image.save()
+    return redirect('my_profile')
