@@ -14,6 +14,7 @@ class Image(models.Model):
     secret = models.CharField(blank=False, max_length=256)
     likes = models.IntegerField(default=0)
     public = models.BooleanField()
+    avatar = models.BooleanField(default=False)
 
     def publish(self):
         image_hash_obj = Image_hash.open(self.image)
@@ -70,5 +71,4 @@ class UserInfo(models.Model):
                                 on_delete=models.CASCADE, unique=True)
     name = models.CharField(max_length=20, blank=True)
     second_name = models.CharField(max_length=20, blank=True)
-    avatar = models.ImageField(blank=True)
     info = models.CharField(max_length=500, blank=True)

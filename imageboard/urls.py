@@ -16,6 +16,7 @@ urlpatterns = [
          name="change_profile"),
     path('my_profile/', views.my_profile, name="my_profile"),
     path('privacy/<str:image_token>', views.change_privacy, name="change_privacy"),
+    path('profile/<int:id>/change_avatar', views.change_avatar, name="change_avatar"),
     path('image/<str:image_token>/likes/', views.image_likes,
          name='image_likes'),
 ]

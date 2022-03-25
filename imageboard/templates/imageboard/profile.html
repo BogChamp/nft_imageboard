@@ -57,6 +57,15 @@
     <a href="/profile/{{ user_info.id }}/change_profile">Change profile
         info</a>
 </div>
+<img src="{{ avatar.image.url }}" width="200px" height="200px">
+<form method="POST" action="/profile/{{ user_info.id }}/change_avatar">
+    {% csrf_token %}
+    {{ avatar_form.token.label }}
+    {{ avatar_form.token }}
+    <p>
+        <button class="btn btn-primary" type="submit">Change avatar</button>
+    </p>
+</form>
 <div>
     <a href="/my_profile">My page</a>
 </div>

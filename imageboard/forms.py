@@ -40,3 +40,8 @@ class PrivacyForm(forms.ModelForm):
     class Meta:
         model = Image
         fields = ('public',)
+
+class AvatarForm(forms.ModelForm):
+    class Meta:
+        model = Image
+        fields = ('token',)

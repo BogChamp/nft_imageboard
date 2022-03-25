@@ -3,7 +3,7 @@ from .models import Image, History, Image_Likes
 from django.http import HttpResponse, HttpResponseForbidden
 from .forms import *
 from django.utils import timezone
-from .forms import NewUserForm, UserInfoForm, PrivacyForm
+from .forms import NewUserForm, UserInfoForm, PrivacyForm, AvatarForm
 from django.contrib.auth import login
 from django.contrib import messages
 from django.contrib.auth import login, authenticate
@@ -123,8 +123,42 @@ def profile(request, id):
 
     user_pics = Image.objects.filter(owner=id)
     pics_forms = [PrivacyForm(instance=image) for image in user_pics]
+    avatar = user_pics.filter(avatar=True)
+    if avatar.exists():
+        avatar = avatar[0]
+    avatar_form = AvatarForm()
     return render(request, 'imageboard/profile.html',
-                  {'user_info': user_info, 'pics': zip(user_pics, pics_forms)})
+                  {'user_info': user_info, 'pics': zip(user_pics, pics_forms), 
+                  'avatar' : avatar, 'avatar_form' : avatar_form})
+
+
+def change_avatar(request, id):
+    if id != request.user.id:
+        return HttpResponseForbidden()
+
+    if request.method != "POST":
+        return redirect('my_profile')
+
+    form = AvatarForm(request.POST)
+    if not form.is_valid():
+        messages.error(request, "Can't change avatar")
+        return redirect('my_profile')
+        
+    image = Image.objects.filter(owner=id, public=True)
+    if not image.filter(token=form.cleaned_data.get('token')).exists():
+        messages.error(request, "Use your public image!!!")
+        return redirect('my_profile')
+    
+    old_avatar = image.filter(avatar=True)
+    if old_avatar.exists():
+        old_avatar = old_avatar[0]
+        old_avatar.avatar = False
+        old_avatar.save()
+    image = image.get(token=form.cleaned_data.get('token'))
+    image.avatar = True
+    image.save()
+    messages.success(request, "Avatar changed successfully!")
+    return redirect('my_profile')
 
 
 def change_profile(request, id):
@@ -193,7 +227,11 @@ def change_privacy(request, image_token):
     if not data.is_valid():
         messages.error(request, "Wrong form of publicity.")
         return redirect('my_profile')
-
+    
+    if image.avatar == True:
+        messages.error(request, "Can't change privacy for avatar")
+        return redirect('my_profile')
+    
     image.public = data.cleaned_data.get('public')
     image.save()
     return redirect('my_profile')
