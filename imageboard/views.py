@@ -22,7 +22,8 @@ def image_board(request):
 
 def image_info(request, image_token):
     image = get_object_or_404(Image, token=image_token)
-    if not image.public and image.owner != request.user:
+    user_info = get_object_or_404(UserInfo, user=request.user)
+    if not user_info.moderator and not image.public and image.owner != request.user:
         return HttpResponseForbidden()
     history = History.objects.filter(image=image).order_by('-date')
     likes = Image_Likes.objects.filter(image=image).order_by('-date')

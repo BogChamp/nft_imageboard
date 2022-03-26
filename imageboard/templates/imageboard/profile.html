@@ -72,6 +72,12 @@
 <div>
     <a href="/board">Top Images</a>
 </div>
+{% if user_info.moderator %}
+    <div>
+        <a class="btn btn-primary" href="/moderation/approval_requests">Approve user requests for
+            recover private images</a>
+    </div>
+{% endif %}
 {% for pic in pics %}
     <div>
         <a href="{% url 'image_info' image_token=pic.0.token %}">
