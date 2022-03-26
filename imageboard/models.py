@@ -72,3 +72,11 @@ class UserInfo(models.Model):
     name = models.CharField(max_length=20, blank=True)
     second_name = models.CharField(max_length=20, blank=True)
     info = models.CharField(max_length=500, blank=True)
+    moderator = models.BooleanField(default=False)
+
+
+class ModerationRequest(models.Model):
+    user = models.OneToOneField(settings.AUTH_USER_MODEL,
+                                on_delete=models.CASCADE, unique=True)
+    image = models.ForeignKey(Image, on_delete=models.CASCADE)
+    accept = models.BooleanField(default=False)

@@ -2,7 +2,7 @@ from django import forms
 from captcha.fields import CaptchaField
 from django.contrib.auth.models import User
 from django.contrib.auth.forms import UserCreationForm
-from .models import Image, UserInfo
+from .models import Image, UserInfo, ModerationRequest
 
 
 class ImageForm(forms.ModelForm):
@@ -13,6 +13,7 @@ class ImageForm(forms.ModelForm):
 
 class NewUserForm(UserCreationForm):
     captcha = CaptchaField()
+
     class Meta:
         model = User
         fields = ("username", "password1", "password2")
@@ -40,6 +41,13 @@ class PrivacyForm(forms.ModelForm):
     class Meta:
         model = Image
         fields = ('public',)
+
+
+class ApprovalForm(forms.ModelForm):
+    class Meta:
+        model = ModerationRequest
+        fields = ('accept',)
+
 
 class AvatarForm(forms.ModelForm):
     class Meta:

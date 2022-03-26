@@ -1,9 +1,12 @@
+from django.contrib.auth.models import User
 from django.shortcuts import render, get_object_or_404, redirect
-from .models import Image, History, Image_Likes
+from imageboard.models import Image, History, Image_Likes, ModerationRequest
 from django.http import HttpResponse, HttpResponseForbidden
-from .forms import *
 from django.utils import timezone
-from .forms import NewUserForm, UserInfoForm, PrivacyForm, AvatarForm
+from imageboard.forms import (
+    NewUserForm, UserInfoForm, PrivacyForm,
+    AvatarForm, RecoveryForm, ImageForm, UserInfo, ApprovalForm
+)
 from django.contrib.auth import login
 from django.contrib import messages
 from django.contrib.auth import login, authenticate
@@ -24,8 +27,8 @@ def image_info(request, image_token):
     history = History.objects.filter(image=image).order_by('-date')
     likes = Image_Likes.objects.filter(image=image).order_by('-date')
     return render(request, 'imageboard/image_info.html',
-                      {'image': image, 'history': history,
-                       'likes': likes})
+                  {'image': image, 'history': history,
+                   'likes': likes})
 
 
 def image_upload(request):
@@ -114,7 +117,8 @@ def my_profile(request):
 
 
 def profile(request, id):
-    user_info = get_object_or_404(UserInfo, pk=id)
+    user = get_object_or_404(User, pk=id)
+    user_info = get_object_or_404(UserInfo, user=user)
 
     if user_info.user != request.user:
         user_pics = Image.objects.filter(owner=id, public=True)
@@ -128,8 +132,8 @@ def profile(request, id):
         avatar = avatar[0]
     avatar_form = AvatarForm()
     return render(request, 'imageboard/profile.html',
-                  {'user_info': user_info, 'pics': zip(user_pics, pics_forms), 
-                  'avatar' : avatar, 'avatar_form' : avatar_form})
+                  {'user_info': user_info, 'pics': zip(user_pics, pics_forms),
+                   'avatar': avatar, 'avatar_form': avatar_form})
 
 
 def change_avatar(request, id):
@@ -143,12 +147,12 @@ def change_avatar(request, id):
     if not form.is_valid():
         messages.error(request, "Can't change avatar")
         return redirect('my_profile')
-        
+
     image = Image.objects.filter(owner=id, public=True)
     if not image.filter(token=form.cleaned_data.get('token')).exists():
         messages.error(request, "Use your public image!!!")
         return redirect('my_profile')
-    
+
     old_avatar = image.filter(avatar=True)
     if old_avatar.exists():
         old_avatar = old_avatar[0]
@@ -203,23 +207,57 @@ def image_recover(request):
         return render(request, 'imageboard/recovery.html', {'form': form})
 
     image = Image.objects.get(secret=secret)
-    image.owner = request.user
+    if image.public:
+        image.owner = request.user
+        image.save()
+        history_log = History.objects.create(
+            owner=request.user,
+            image=image,
+            date=timezone.now()
+        )
+        history_log.save()
+        messages.success(request, "Recovery successful")
+    else:
+        moder_req = ModerationRequest.objects.create(
+            user=request.user,
+            image=image,
+        )
+        moder_req.save()
+        messages.success(request, "Send to moderator approval")
+    return redirect('profile', request.user.id)
+
+
+def approval_requests(request):
+    requests = ModerationRequest.objects.filter(accept=False)
+    user_info = get_object_or_404(UserInfo, user=request.user)
+    if not user_info.moderator:
+        return HttpResponseForbidden()
+    approval_forms = [ApprovalForm(instance=r) for r in requests]
+    return render(request, 'imageboard/approval_requests.html',
+                  {'requests': zip(requests, approval_forms)})
+
+
+def accept_request(request, request_id):
+    moderation_request = get_object_or_404(ModerationRequest, id=request_id)
+    moderation_request.accept = True
+    moderation_request.save()
+    image = moderation_request.image
+    image.owner = moderation_request.user
     image.save()
     history_log = History.objects.create(
-        owner=request.user,
+        owner=moderation_request.user,
         image=image,
         date=timezone.now()
     )
     history_log.save()
-    messages.success(request, "Recovery successful")
-    return redirect('profile', request.user.id)
+    return redirect('approval_requests')
 
 
 def change_privacy(request, image_token):
     image = get_object_or_404(Image, token=image_token)
     if request.user != image.owner:
         return HttpResponseForbidden()
-    
+
     if request.method != "POST":
         return redirect('my_profile')
 
@@ -227,11 +265,11 @@ def change_privacy(request, image_token):
     if not data.is_valid():
         messages.error(request, "Wrong form of publicity.")
         return redirect('my_profile')
-    
+
     if image.avatar == True:
         messages.error(request, "Can't change privacy for avatar")
         return redirect('my_profile')
-    
+
     image.public = data.cleaned_data.get('public')
     image.save()
     return redirect('my_profile')

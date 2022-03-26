@@ -1,0 +1,98 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Approval requests</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!--===============================================================================================-->
+    <link rel="icon" type="image/png"
+          href="{% static 'images/icons/favicon.ico' %}"/>
+    <!--===============================================================================================-->
+    <link rel="stylesheet" type="text/css"
+          href="{% static 'vendor/bootstrap/css/bootstrap.min.css' %}">
+    <!--===============================================================================================-->
+    <link rel="stylesheet" type="text/css"
+          href="{% static 'fonts/font-awesome-4.7.0/css/font-awesome.min.css' %}">
+    <!--===============================================================================================-->
+    <link rel="stylesheet" type="text/css"
+          href="{% static 'fonts/Linearicons-Free-v1.0.0/icon-font.min.css' %}">
+    <!--===============================================================================================-->
+    <link rel="stylesheet" type="text/css"
+          href="{% static 'vendor/animate/animate.css' %}">
+    <!--===============================================================================================-->
+    <link rel="stylesheet" type="text/css"
+          href="{% static 'vendor/css-hamburgers/hamburgers.min.css' %}">
+    <!--===============================================================================================-->
+    <link rel="stylesheet" type="text/css"
+          href="{% static 'vendor/animsition/css/animsition.min.css' %}">
+    <!--===============================================================================================-->
+    <link rel="stylesheet" type="text/css"
+          href="{% static 'vendor/select2/select2.min.css' %}">
+    <!--===============================================================================================-->
+    <link rel="stylesheet" type="text/css"
+          href="{% static 'vendor/daterangepicker/daterangepicker.css' %}">
+    <!--===============================================================================================-->
+    <link rel="stylesheet" type="text/css" href="{% static 'css/util.css' %}">
+    <link rel="stylesheet" type="text/css" href="{% static 'css/main.css' %}">
+    <!--===============================================================================================-->
+
+</head>
+<body>
+
+{% if messages %}
+    <b>
+        <ul class="messages">
+            {% for message in messages %}
+                <li{% if message.tags %}
+                    class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+            {% endfor %}
+        </ul>
+    </b>
+{% endif %}
+
+{% for request in requests %}
+    <div>
+        <a href="{% url 'image_info' image_token=request.0.image.token %}">
+            <h1>{{ request.0.image.title }}</h1></a>
+
+        <p>from user:<a
+                href="profile/{{ request.0.image.owner.id }}">{{ request.0.image.owner }}</a>
+        </p>
+
+         <p>to user:<a
+                href="profile/{{ request.0.user.id }}">{{ request.0.user }}</a>
+        </p>
+
+
+        <form method="POST"
+              action="/moderation/accept/{{ request.0.id }}">
+            {% csrf_token %}
+            {{ request.1.accept }}
+            <p>
+                <button class="btn btn-primary" type="submit">Accept</button>
+            </p>
+        </form>
+
+    </div>
+{% endfor %}
+
+<!--===============================================================================================-->
+<script src="{% static 'vendor/jquery/jquery-3.2.1.min.js' %}"></script>
+<!--===============================================================================================-->
+<script src="{% static 'vendor/animsition/js/animsition.min.js' %}"></script>
+<!--===============================================================================================-->
+<script src="{% static 'vendor/bootstrap/js/popper.js' %}"></script>
+<script src="{% static 'vendor/bootstrap/js/bootstrap.min.js' %}"></script>
+<!--===============================================================================================-->
+<script src="{% static 'vendor/select2/select2.min.js' %}"></script>
+<!--===============================================================================================-->
+<script src="{% static 'vendor/daterangepicker/moment.min.js' %}"></script>
+<script src="{% static 'vendor/daterangepicker/daterangepicker.js' %}"></script>
+<!--===============================================================================================-->
+<script src="{% static 'vendor/countdowntime/countdowntime.js' %}"></script>
+<!--===============================================================================================-->
+<script src="{% static 'js/main.js' %}"></script>
+
+</body>
+</html>
