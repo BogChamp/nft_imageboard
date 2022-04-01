@@ -4,7 +4,7 @@ from imageboard.models import Image, History, Image_Likes, ModerationRequest
 from django.http import HttpResponse, HttpResponseForbidden
 from django.utils import timezone
 from imageboard.forms import (
-    NewUserForm, UserInfoForm, PrivacyForm,
+    NewUserForm, UserInfoForm, PrivacyForm, TransferForm,
     AvatarForm, RecoveryForm, ImageForm, UserInfo, ApprovalForm
 )
 from django.contrib.auth import login
@@ -274,3 +274,33 @@ def change_privacy(request, image_token):
     image.public = data.cleaned_data.get('public')
     image.save()
     return redirect('my_profile')
+
+
+def transfer(request):
+    if request.method != "POST":
+        form = TransferForm()
+        return render(request, 'imageboard/transfer.html',
+                      {'form': form})
+
+    form = TransferForm(request.POST)
+    if form.is_valid():
+        from_user = request.user
+        to_user = form.cleaned_data.get('to_user')
+        image_token = form.cleaned_data.get('image_token')
+        image = get_object_or_404(Image, token=image_token)
+        if image.owner != from_user:
+            messages.error(request, "Image don't belong to you")
+        else:
+            image.owner = to_user
+            image.save()
+            history_log = History.objects.create(
+                owner=to_user,
+                image=image,
+                date=timezone.now()
+            )
+            history_log.save()
+        messages.success(request, "Image transfer successfully!")
+        return redirect('profile', request.user.id)
+
+    messages.error(request, "Something went wrong(")
+    return render(request, 'imageboard/transfer.html', {'form': form})

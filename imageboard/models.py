@@ -80,3 +80,13 @@ class ModerationRequest(models.Model):
                                 on_delete=models.CASCADE, unique=True)
     image = models.ForeignKey(Image, on_delete=models.CASCADE)
     accept = models.BooleanField(default=False)
+
+
+class Transfer(models.Model):
+    from_user = models.OneToOneField(settings.AUTH_USER_MODEL,
+                                     on_delete=models.CASCADE, unique=True,
+                                     related_name='from_user')
+    to_user = models.OneToOneField(settings.AUTH_USER_MODEL,
+                                   on_delete=models.CASCADE, unique=True,
+                                   related_name='to_user')
+    image_token = models.CharField(max_length=200)

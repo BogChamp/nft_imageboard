@@ -24,7 +24,8 @@ urlpatterns = [
     path('moderation/accept/<int:request_id>', views.accept_request,
          name="accept_request"),
     path('moderation/approval_requests', views.approval_requests,
-         name='approval_requests')
+         name='approval_requests'),
+    path('transfer', views.transfer, name='transfer')
 ]
 
 if settings.DEBUG:
