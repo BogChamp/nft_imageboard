@@ -1,11 +1,12 @@
+from re import I
 from django.contrib.auth.models import User
 from django.shortcuts import render, get_object_or_404, redirect
-from imageboard.models import Image, History, Image_Likes, ModerationRequest
+from imageboard.models import Image, History, Image_Likes, ModerationRequest, Transfer
 from django.http import HttpResponse, HttpResponseForbidden
 from django.utils import timezone
 from imageboard.forms import (
     NewUserForm, UserInfoForm, PrivacyForm, TransferForm,
-    AvatarForm, RecoveryForm, ImageForm, UserInfo, ApprovalForm
+    AvatarForm, RecoveryForm, ImageForm, UserInfo, ApprovalForm,
 )
 from django.contrib.auth import login
 from django.contrib import messages
@@ -290,17 +291,49 @@ def transfer(request):
         image = get_object_or_404(Image, token=image_token)
         if image.owner != from_user:
             messages.error(request, "Image don't belong to you")
-        else:
-            image.owner = to_user
-            image.save()
-            history_log = History.objects.create(
-                owner=to_user,
-                image=image,
-                date=timezone.now()
-            )
-            history_log.save()
+            return render(request, 'imageboard/transfer.html', {'form': form})
+
+        if image.avatar:
+            messages.error(request, "Can't transfer avatar")
+            return render(request, 'imageboard/transfer.html', {'form': form})
+        
+        if from_user == to_user:
+            messages.success(request, "Image transfer successfully!")
+            return redirect('profile', request.user.id)
+
+        Transfer.objects.create(from_user=from_user, to_user=to_user,
+        image_token=image_token).save()
         messages.success(request, "Image transfer successfully!")
         return redirect('profile', request.user.id)
 
     messages.error(request, "Something went wrong(")
     return render(request, 'imageboard/transfer.html', {'form': form})
+ 
+def get_images(request, id):
+    user = get_object_or_404(User, pk=id)
+    if user != request.user:
+        return HttpResponseForbidden()
+
+    images = Transfer.objects.filter(to_user=user)
+    pics = [Image.objects.get(token=image.image_token) for image in images]
+    return render(request, 'imageboard/get_images.html', {'pics': pics, 'user': id})
+
+def get_image(request, id, image_token):
+    user = get_object_or_404(User, pk=id)
+    if user != request.user:
+        return HttpResponseForbidden()
+    
+    if request.method != "POST":
+        return redirect('get_images', id)
+    
+    image = get_object_or_404(Image, token=image_token)
+    image.owner = request.user
+    image.save()
+    history_log = History.objects.create(
+        owner=request.user,
+        image=image,
+        date=timezone.now()
+    )
+    history_log.save()
+    Transfer.objects.filter(image_token=image_token).delete()
+    return redirect('get_images', id)
