@@ -1,12 +1,12 @@
 from re import I
 from django.contrib.auth.models import User
 from django.shortcuts import render, get_object_or_404, redirect
-from imageboard.models import Image, History, Image_Likes, ModerationRequest, Transfer
+from imageboard.models import Image, History, Image_Likes, ModerationRequest, Transfer, Comments
 from django.http import HttpResponse, HttpResponseForbidden
 from django.utils import timezone
 from imageboard.forms import (
     NewUserForm, UserInfoForm, PrivacyForm, TransferForm,
-    AvatarForm, RecoveryForm, ImageForm, UserInfo, ApprovalForm,
+    AvatarForm, RecoveryForm, ImageForm, UserInfo, ApprovalForm, CommentForm
 )
 from django.contrib.auth import login
 from django.contrib import messages
@@ -110,6 +110,28 @@ def image_likes(request, image_token):
         image.save()
 
     return redirect('image_info', image.token)
+
+def add_comment(request, image_token):
+    image = get_object_or_404(Image, token=image_token)
+    user = request.user
+    image_comments = Comments.objects.filter(image=image)
+    #print(len(image_comments))
+    if request.method != "POST":
+        form = CommentForm()
+        return render(request, 'imageboard/add_comment.html',
+                      {'image': image, 'comments': image_comments, 'comment_form': form})
+
+    form = CommentForm(request.POST)
+    form.is_valid()
+    body = form.cleaned_data.get('body')
+    Comments.objects.create(
+        owner=user,
+        image=image,
+        date=timezone.now(),
+        body=body
+    ).save()
+    return render(request, 'imageboard/add_comment.html',
+                  {'image': image, 'comments': image_comments, 'comment_form': form})
 
 
 def my_profile(request):

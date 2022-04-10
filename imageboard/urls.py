@@ -29,7 +29,8 @@ urlpatterns = [
          name="accept_request"),
     path('moderation/approval_requests', views.approval_requests,
          name='approval_requests'),
-    path('transfer', views.transfer, name='transfer')
+    path('transfer', views.transfer, name='transfer'),
+    path('board/<str:image_token>/add_comment', views.add_comment, name='add_comment'),
 ]
 
 if settings.DEBUG:

@@ -52,6 +52,13 @@ class History(models.Model):
     def __str__(self):
         return str(self.owner) + ' : ' + str(self.date)
 
+class Comments(models.Model):
+    owner = models.ForeignKey(settings.AUTH_USER_MODEL,
+                              on_delete=models.CASCADE)
+    image = models.ForeignKey(Image, on_delete=models.CASCADE)
+    date = models.DateTimeField(auto_now=True)
+    body = models.TextField(blank=False)
+
 
 class Image_Likes(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL,
