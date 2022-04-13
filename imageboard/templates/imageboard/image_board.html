@@ -52,12 +52,14 @@
 </div>
 {% for image in images %}
     <div>
-        <a href="{% url 'image_info' image_token=image.token %}">
+        <a  href="{% url 'image_info' image_token=image.token %}">
             <h1>{{ image.title }}</h1></a>
 
         <p>owner:<a href="profile/{{ image.owner.id }}">{{ image.owner }}</a>
         </p>
         <img src="{{ image.image.url }}" width="200px" height="200px">
+        <a class="btn btn-primary" href="{% url 'add_comment' image_token=image.token %}">
+            <h1>Discuss</h1></a>
     </div>
 {% endfor %}
 
