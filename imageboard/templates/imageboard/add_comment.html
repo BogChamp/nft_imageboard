@@ -49,23 +49,34 @@
     <meta charset="utf-8">
 </head>
 <body>
-<h2>{{ image.title }} </h2>
-<br> <img src="{{ image.image.url }}" width="200px" height="200px"> <br>
-<br> <b>Add a comment </b> <br>
-<form id="form" method="POST">
+    {% if messages %}
+        <b>
+            <ul class="messages">
+                {% for message in messages %}
+                    <li{% if message.tags %}
+                        class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+                {% endfor %}
+            </ul>
+        </b>
+    {% endif %}
+    <p><a href="/board">Back to board</a></p>
+    <h2>{{ image.title }} </h2>
+    <br> <img src="{{ image.image.url }}" width="200px" height="200px"> <br>
+    <br> <b>Add a comment </b> <br>
+    <form id="form" method="POST">
         {% csrf_token %}
         {{ comment_form.body }}
         <p>
             <button class="btn btn-primary" type="submit">Send</button>
         </p>
-</form>
-<button type="button" onclick="makeBold()">Bold</button>
-<button type="button" onclick="makeItalic()">Italic</button>
+    </form>
+    <button type="button" onclick="makeBold()">Bold</button>
+    <button type="button" onclick="makeItalic()">Italic</button>
 
-{% for comment in comments %}
-    <br> <b>{{ comment.owner }}</b> {{ comment.date }}
-    <br>{{ comment.body }}<br>
-{% endfor %}
+    {% for comment in comments %}
+        <br> <b>{{ comment.owner }}</b> {{ comment.date }}</br>
+        <p>{{comment.body|safe}}</body></p>
+    {% endfor %}
 
 <script>
     function makeBold(){

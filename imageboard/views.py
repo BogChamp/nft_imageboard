@@ -14,6 +14,7 @@ from django.contrib.auth import login, authenticate
 from django.contrib.auth.forms import AuthenticationForm
 from . import recovery
 from hashlib import sha256
+import bleach
 
 
 def image_board(request):
@@ -112,24 +113,29 @@ def image_likes(request, image_token):
     return redirect('image_info', image.token)
 
 def add_comment(request, image_token):
-    image = get_object_or_404(Image, token=image_token)
     user = request.user
+    if not User.objects.filter(id=user.id).exists():
+        return redirect('login')
+
+    image = get_object_or_404(Image, token=image_token)
     image_comments = Comments.objects.filter(image=image)
-    #print(len(image_comments))
     if request.method != "POST":
         form = CommentForm()
         return render(request, 'imageboard/add_comment.html',
                       {'image': image, 'comments': image_comments, 'comment_form': form})
 
     form = CommentForm(request.POST)
-    form.is_valid()
-    body = form.cleaned_data.get('body')
+    if not form.is_valid():
+        messages.error(request, "Wrong form!")
+        return render(request, 'imageboard/add_comment.html',
+                  {'image': image, 'comments': image_comments, 'comment_form': form})
+    
+    body = bleach.clean(form.cleaned_data.get('body'))
     Comments.objects.create(
         owner=user,
         image=image,
         date=timezone.now(),
-        body=body
-    ).save()
+        body=body).save()
     return render(request, 'imageboard/add_comment.html',
                   {'image': image, 'comments': image_comments, 'comment_form': form})
 
