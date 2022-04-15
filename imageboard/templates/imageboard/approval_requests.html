@@ -2,8 +2,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>Profile</title>
+    <title>Approval requests</title>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <!--===============================================================================================-->
@@ -37,8 +36,10 @@
     <link rel="stylesheet" type="text/css" href="{% static 'css/util.css' %}">
     <link rel="stylesheet" type="text/css" href="{% static 'css/main.css' %}">
     <!--===============================================================================================-->
+
 </head>
 <body>
+
 {% if messages %}
     <b>
         <ul class="messages">
@@ -50,64 +51,31 @@
     </b>
 {% endif %}
 
-<h3>Name: {{ user_info.name }}</h3>
-<h3>Second Name: {{ user_info.second_name }}</h3>
-<h3>About me: {{ user_info.info }}</h3>
-<div>
-    <a href="/profile/{{ user_info.id }}/change_profile">Change profile
-        info</a>
-</div>
-<div>
-    <a class="btn btn-primary" href="/profile/{{ user_info.id }}/get_images">View your offers</a>
-</div>
-<img src="{{ avatar.image.url }}" width="200px" height="200px">
-<form method="POST" action="/profile/{{ user_info.id }}/change_avatar">
-    {% csrf_token %}
-    {{ avatar_form.token.label }}
-    {{ avatar_form.token }}
-    <p>
-        <button class="btn btn-primary" type="submit">Change avatar</button>
-    </p>
-</form>
-<div>
-    <a href="/my_profile">My page</a>
-</div>
-<div>
-    <a href="/board">Top Images</a>
-</div>
-{% if user_info.moderator %}
+{% for request in requests %}
     <div>
-        <a class="btn btn-primary" href="/moderation/approval_requests">Approve user requests for
-            recover private images</a>
-    </div>
-{% endif %}
-{% for pic in pics %}
-    <div>
-        <a href="{% url 'image_info' image_token=pic.0.token %}">
-            <h1>{{ pic.0.title }}</h1></a>
-        <img src="{{ pic.0.image.url }}" width="200px" height="200px">
-        <form method="POST" action="/privacy/{{ pic.0.token }}">
+        <a href="{% url 'image_info' image_token=request.0.image.token %}">
+            <h1>{{ request.0.image.title }}</h1></a>
+
+        <p>from user:<a
+                href="profile/{{ request.0.image.owner.id }}">{{ request.0.image.owner }}</a>
+        </p>
+
+         <p>to user:<a
+                href="profile/{{ request.0.user.id }}">{{ request.0.user }}</a>
+        </p>
+
+
+        <form method="POST"
+              action="/moderation/accept/{{ request.0.id }}">
             {% csrf_token %}
-            {{ pic.1.public }}
-            {{ pic.1.public.label }}
+            {{ request.1.accept }}
             <p>
-                <button class="btn btn-primary" type="submit">Change</button>
+                <button class="btn btn-primary" type="submit">Accept</button>
             </p>
         </form>
+
     </div>
 {% endfor %}
-<br>
-<p>
-    <a class="btn btn-primary" href="/image/upload">Add images</a>
-</p>
-<br>
-<p>
-    <a class="btn btn-primary" href="/profile/recovery">Recover Image</a>
-</p>
-<br>
-<p>
-    <a class="btn btn-primary" href="/transfer">Transfer Image</a>
-</p>
 
 <!--===============================================================================================-->
 <script src="{% static 'vendor/jquery/jquery-3.2.1.min.js' %}"></script>
@@ -125,5 +93,6 @@
 <script src="{% static 'vendor/countdowntime/countdowntime.js' %}"></script>
 <!--===============================================================================================-->
 <script src="{% static 'js/main.js' %}"></script>
+
 </body>
 </html>

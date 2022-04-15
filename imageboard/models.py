@@ -14,6 +14,7 @@ class Image(models.Model):
     secret = models.CharField(blank=False, max_length=256)
     likes = models.IntegerField(default=0)
     public = models.BooleanField()
+    avatar = models.BooleanField(default=False)
 
     def publish(self):
         image_hash_obj = Image_hash.open(self.image)
@@ -51,6 +52,13 @@ class History(models.Model):
     def __str__(self):
         return str(self.owner) + ' : ' + str(self.date)
 
+class Comments(models.Model):
+    owner = models.ForeignKey(settings.AUTH_USER_MODEL,
+                              on_delete=models.CASCADE)
+    image = models.ForeignKey(Image, on_delete=models.CASCADE)
+    date = models.DateTimeField(auto_now=True)
+    body = models.TextField(blank=False)
+
 
 class Image_Likes(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL,
@@ -70,5 +78,22 @@ class UserInfo(models.Model):
                                 on_delete=models.CASCADE, unique=True)
     name = models.CharField(max_length=20, blank=True)
     second_name = models.CharField(max_length=20, blank=True)
-    avatar = models.ImageField(blank=True)
     info = models.CharField(max_length=500, blank=True)
+    moderator = models.BooleanField(default=False)
+
+
+class ModerationRequest(models.Model):
+    user = models.OneToOneField(settings.AUTH_USER_MODEL,
+                                on_delete=models.CASCADE, unique=True)
+    image = models.ForeignKey(Image, on_delete=models.CASCADE)
+    accept = models.BooleanField(default=False)
+
+
+class Transfer(models.Model):
+    from_user = models.OneToOneField(settings.AUTH_USER_MODEL,
+                                     on_delete=models.CASCADE, unique=True,
+                                     related_name='from_user')
+    to_user = models.OneToOneField(settings.AUTH_USER_MODEL,
+                                   on_delete=models.CASCADE, unique=True,
+                                   related_name='to_user')
+    image_token = models.CharField(max_length=200)

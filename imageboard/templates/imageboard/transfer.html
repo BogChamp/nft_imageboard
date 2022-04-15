@@ -3,8 +3,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Profile</title>
-    <meta charset="UTF-8">
+    <title>Transfer images</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <!--===============================================================================================-->
     <link rel="icon" type="image/png"
@@ -37,77 +36,33 @@
     <link rel="stylesheet" type="text/css" href="{% static 'css/util.css' %}">
     <link rel="stylesheet" type="text/css" href="{% static 'css/main.css' %}">
     <!--===============================================================================================-->
+
 </head>
 <body>
-{% if messages %}
-    <b>
-        <ul class="messages">
-            {% for message in messages %}
-                <li{% if message.tags %}
-                    class="{{ message.tags }}"{% endif %}>{{ message }}</li>
-            {% endfor %}
-        </ul>
-    </b>
-{% endif %}
 
-<h3>Name: {{ user_info.name }}</h3>
-<h3>Second Name: {{ user_info.second_name }}</h3>
-<h3>About me: {{ user_info.info }}</h3>
-<div>
-    <a href="/profile/{{ user_info.id }}/change_profile">Change profile
-        info</a>
+<div class="container py-5">
+    <h1>Transfer image</h1>
+    <form method="POST">
+        {% csrf_token %}
+        {{ form.image_token }}
+        {{ form.to_user }}
+        <p>
+            <button class="btn btn-primary" type="submit">Transfer</button>
+        </p>
+
+    </form>
+      {% if messages %}
+        <b>
+            <ul class="messages">
+                {% for message in messages %}
+                    <li{% if message.tags %}
+                        class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+                {% endfor %}
+            </ul>
+        </b>
+    {% endif %}
+
 </div>
-<div>
-    <a class="btn btn-primary" href="/profile/{{ user_info.id }}/get_images">View your offers</a>
-</div>
-<img src="{{ avatar.image.url }}" width="200px" height="200px">
-<form method="POST" action="/profile/{{ user_info.id }}/change_avatar">
-    {% csrf_token %}
-    {{ avatar_form.token.label }}
-    {{ avatar_form.token }}
-    <p>
-        <button class="btn btn-primary" type="submit">Change avatar</button>
-    </p>
-</form>
-<div>
-    <a href="/my_profile">My page</a>
-</div>
-<div>
-    <a href="/board">Top Images</a>
-</div>
-{% if user_info.moderator %}
-    <div>
-        <a class="btn btn-primary" href="/moderation/approval_requests">Approve user requests for
-            recover private images</a>
-    </div>
-{% endif %}
-{% for pic in pics %}
-    <div>
-        <a href="{% url 'image_info' image_token=pic.0.token %}">
-            <h1>{{ pic.0.title }}</h1></a>
-        <img src="{{ pic.0.image.url }}" width="200px" height="200px">
-        <form method="POST" action="/privacy/{{ pic.0.token }}">
-            {% csrf_token %}
-            {{ pic.1.public }}
-            {{ pic.1.public.label }}
-            <p>
-                <button class="btn btn-primary" type="submit">Change</button>
-            </p>
-        </form>
-    </div>
-{% endfor %}
-<br>
-<p>
-    <a class="btn btn-primary" href="/image/upload">Add images</a>
-</p>
-<br>
-<p>
-    <a class="btn btn-primary" href="/profile/recovery">Recover Image</a>
-</p>
-<br>
-<p>
-    <a class="btn btn-primary" href="/transfer">Transfer Image</a>
-</p>
 
 <!--===============================================================================================-->
 <script src="{% static 'vendor/jquery/jquery-3.2.1.min.js' %}"></script>

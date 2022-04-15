@@ -1,15 +1,20 @@
+from re import I
+from django.contrib.auth.models import User
 from django.shortcuts import render, get_object_or_404, redirect
-from .models import Image, History, Image_Likes
+from imageboard.models import Image, History, Image_Likes, ModerationRequest, Transfer, Comments
 from django.http import HttpResponse, HttpResponseForbidden
-from .forms import *
 from django.utils import timezone
-from .forms import NewUserForm, UserInfoForm, PublicityForm
+from imageboard.forms import (
+    NewUserForm, UserInfoForm, PrivacyForm, TransferForm,
+    AvatarForm, RecoveryForm, ImageForm, UserInfo, ApprovalForm, CommentForm
+)
 from django.contrib.auth import login
 from django.contrib import messages
 from django.contrib.auth import login, authenticate
 from django.contrib.auth.forms import AuthenticationForm
 from . import recovery
 from hashlib import sha256
+import bleach
 
 
 def image_board(request):
@@ -19,23 +24,14 @@ def image_board(request):
 
 def image_info(request, image_token):
     image = get_object_or_404(Image, token=image_token)
-    if not image.public and image.owner != request.user:
+    user_info = get_object_or_404(UserInfo, user=request.user)
+    if not user_info.moderator and not image.public and image.owner != request.user:
         return HttpResponseForbidden()
     history = History.objects.filter(image=image).order_by('-date')
     likes = Image_Likes.objects.filter(image=image).order_by('-date')
-    if request.method != 'POST' or request.user != image.owner:
-        return render(request, 'imageboard/image_info.html',
-                      {'image': image, 'history': history,
-                       'likes': likes})
-
-    data = PublicityForm(request.POST)
-    if not data.is_valid():
-        messages.error(request, "Wrong form of publicity.")
-        return redirect('my_profile')
-
-    image.public = data.cleaned_data.get('public')
-    image.save()
-    return redirect('my_profile')
+    return render(request, 'imageboard/image_info.html',
+                  {'image': image, 'history': history,
+                   'likes': likes})
 
 
 def image_upload(request):
@@ -116,6 +112,33 @@ def image_likes(request, image_token):
 
     return redirect('image_info', image.token)
 
+def add_comment(request, image_token):
+    user = request.user
+    if not User.objects.filter(id=user.id).exists():
+        return redirect('login')
+
+    image = get_object_or_404(Image, token=image_token)
+    image_comments = Comments.objects.filter(image=image)
+    if request.method != "POST":
+        form = CommentForm()
+        return render(request, 'imageboard/add_comment.html',
+                      {'image': image, 'comments': image_comments, 'comment_form': form})
+
+    form = CommentForm(request.POST)
+    if not form.is_valid():
+        messages.error(request, "Wrong form!")
+        return render(request, 'imageboard/add_comment.html',
+                  {'image': image, 'comments': image_comments, 'comment_form': form})
+    
+    body = bleach.clean(form.cleaned_data.get('body'))
+    Comments.objects.create(
+        owner=user,
+        image=image,
+        date=timezone.now(),
+        body=body).save()
+    return render(request, 'imageboard/add_comment.html',
+                  {'image': image, 'comments': image_comments, 'comment_form': form})
+
 
 def my_profile(request):
     if not User.objects.filter(id=request.user.id).exists():
@@ -124,7 +147,8 @@ def my_profile(request):
 
 
 def profile(request, id):
-    user_info = get_object_or_404(UserInfo, pk=id)
+    user = get_object_or_404(User, pk=id)
+    user_info = get_object_or_404(UserInfo, user=user)
 
     if user_info.user != request.user:
         user_pics = Image.objects.filter(owner=id, public=True)
@@ -132,9 +156,43 @@ def profile(request, id):
                       {'user_info': user_info, 'pics': user_pics})
 
     user_pics = Image.objects.filter(owner=id)
-    pics_forms = [PublicityForm(instance=image) for image in user_pics]
+    pics_forms = [PrivacyForm(instance=image) for image in user_pics]
+    avatar = user_pics.filter(avatar=True)
+    if avatar.exists():
+        avatar = avatar[0]
+    avatar_form = AvatarForm()
     return render(request, 'imageboard/profile.html',
-                  {'user_info': user_info, 'pics': zip(user_pics, pics_forms)})
+                  {'user_info': user_info, 'pics': zip(user_pics, pics_forms),
+                   'avatar': avatar, 'avatar_form': avatar_form})
+
+
+def change_avatar(request, id):
+    if id != request.user.id:
+        return HttpResponseForbidden()
+
+    if request.method != "POST":
+        return redirect('my_profile')
+
+    form = AvatarForm(request.POST)
+    if not form.is_valid():
+        messages.error(request, "Can't change avatar")
+        return redirect('my_profile')
+
+    image = Image.objects.filter(owner=id, public=True)
+    if not image.filter(token=form.cleaned_data.get('token')).exists():
+        messages.error(request, "Use your public image!!!")
+        return redirect('my_profile')
+
+    old_avatar = image.filter(avatar=True)
+    if old_avatar.exists():
+        old_avatar = old_avatar[0]
+        old_avatar.avatar = False
+        old_avatar.save()
+    image = image.get(token=form.cleaned_data.get('token'))
+    image.avatar = True
+    image.save()
+    messages.success(request, "Avatar changed successfully!")
+    return redirect('my_profile')
 
 
 def change_profile(request, id):
@@ -179,6 +237,124 @@ def image_recover(request):
         return render(request, 'imageboard/recovery.html', {'form': form})
 
     image = Image.objects.get(secret=secret)
+    if image.public:
+        image.owner = request.user
+        image.save()
+        history_log = History.objects.create(
+            owner=request.user,
+            image=image,
+            date=timezone.now()
+        )
+        history_log.save()
+        messages.success(request, "Recovery successful")
+    else:
+        moder_req = ModerationRequest.objects.create(
+            user=request.user,
+            image=image,
+        )
+        moder_req.save()
+        messages.success(request, "Send to moderator approval")
+    return redirect('profile', request.user.id)
+
+
+def approval_requests(request):
+    requests = ModerationRequest.objects.filter(accept=False)
+    user_info = get_object_or_404(UserInfo, user=request.user)
+    if not user_info.moderator:
+        return HttpResponseForbidden()
+    approval_forms = [ApprovalForm(instance=r) for r in requests]
+    return render(request, 'imageboard/approval_requests.html',
+                  {'requests': zip(requests, approval_forms)})
+
+
+def accept_request(request, request_id):
+    moderation_request = get_object_or_404(ModerationRequest, id=request_id)
+    moderation_request.accept = True
+    moderation_request.save()
+    image = moderation_request.image
+    image.owner = moderation_request.user
+    image.save()
+    history_log = History.objects.create(
+        owner=moderation_request.user,
+        image=image,
+        date=timezone.now()
+    )
+    history_log.save()
+    return redirect('approval_requests')
+
+
+def change_privacy(request, image_token):
+    image = get_object_or_404(Image, token=image_token)
+    if request.user != image.owner:
+        return HttpResponseForbidden()
+
+    if request.method != "POST":
+        return redirect('my_profile')
+
+    data = PrivacyForm(request.POST)
+    if not data.is_valid():
+        messages.error(request, "Wrong form of publicity.")
+        return redirect('my_profile')
+
+    if image.avatar == True:
+        messages.error(request, "Can't change privacy for avatar")
+        return redirect('my_profile')
+
+    image.public = data.cleaned_data.get('public')
+    image.save()
+    return redirect('my_profile')
+
+
+def transfer(request):
+    if request.method != "POST":
+        form = TransferForm()
+        return render(request, 'imageboard/transfer.html',
+                      {'form': form})
+
+    form = TransferForm(request.POST)
+    if form.is_valid():
+        from_user = request.user
+        to_user = form.cleaned_data.get('to_user')
+        image_token = form.cleaned_data.get('image_token')
+        image = get_object_or_404(Image, token=image_token)
+        if image.owner != from_user:
+            messages.error(request, "Image don't belong to you")
+            return render(request, 'imageboard/transfer.html', {'form': form})
+
+        if image.avatar:
+            messages.error(request, "Can't transfer avatar")
+            return render(request, 'imageboard/transfer.html', {'form': form})
+        
+        if from_user == to_user:
+            messages.success(request, "Image transfer successfully!")
+            return redirect('profile', request.user.id)
+
+        Transfer.objects.create(from_user=from_user, to_user=to_user,
+        image_token=image_token).save()
+        messages.success(request, "Image transfer successfully!")
+        return redirect('profile', request.user.id)
+
+    messages.error(request, "Something went wrong(")
+    return render(request, 'imageboard/transfer.html', {'form': form})
+ 
+def get_images(request, id):
+    user = get_object_or_404(User, pk=id)
+    if user != request.user:
+        return HttpResponseForbidden()
+
+    images = Transfer.objects.filter(to_user=user)
+    pics = [Image.objects.get(token=image.image_token) for image in images]
+    return render(request, 'imageboard/get_images.html', {'pics': pics, 'user': id})
+
+def get_image(request, id, image_token):
+    user = get_object_or_404(User, pk=id)
+    if user != request.user:
+        return HttpResponseForbidden()
+    
+    if request.method != "POST":
+        return redirect('get_images', id)
+    
+    image = get_object_or_404(Image, token=image_token)
     image.owner = request.user
     image.save()
     history_log = History.objects.create(
@@ -187,5 +363,5 @@ def image_recover(request):
         date=timezone.now()
     )
     history_log.save()
-    messages.success(request, "Recovery successful")
-    return redirect('profile', request.user.id)
+    Transfer.objects.filter(image_token=image_token).delete()
+    return redirect('get_images', id)
