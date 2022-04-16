@@ -63,7 +63,15 @@
             href="/profile/{{ image.owner.id }}">{{ image.owner }}</a></p>
 
     <p><b>Published date:</b> {{ image.date_last_own }}</p>
-    <img src="{{ image.image.url }}" width="200px" height="200px">
+    <div>
+        <img src="{{ image.image.url }}" width="200px" height="200px"> 
+        {% if user_info.moderator %}
+            <form method="POST" action="/image/{{image.token}}/ban_image">
+                    {% csrf_token %}
+                    <button class="btn btn-primary" type="submit">Ban!</button>
+            </form>
+        {% endif %}
+    </div>
     <p><a href="{% url 'complaint' image_token=image.token %}">Complain</a></p>
     <p>
         <i onClick="document.getElementById('likebutton').submit()"

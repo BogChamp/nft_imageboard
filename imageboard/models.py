@@ -15,6 +15,7 @@ class Image(models.Model):
     likes = models.IntegerField(default=0)
     public = models.BooleanField()
     avatar = models.BooleanField(default=False)
+    banned = models.BooleanField(default=False)
 
     def publish(self):
         image_hash_obj = Image_hash.open(self.image)

@@ -33,7 +33,8 @@ def image_info(request, image_token):
     comments = Comments.objects.filter(image=image).order_by('-date')
     return render(request, 'imageboard/image_info.html',
                   {'image': image, 'history': history,
-                   'likes': likes, 'comments': comments})
+                   'likes': likes, 'comments': comments,
+                   'user_info': user_info})
 
 
 def image_upload(request):
@@ -106,6 +107,9 @@ def image_likes(request, image_token):
     image = get_object_or_404(Image, token=image_token)
     if request.method != "POST":
         return redirect('image_info', image.token)
+    
+    if not image.public:
+        return HttpResponseForbidden()
 
     if not Image_Likes.objects.filter(user=request.user, image=image).exists():
         Image_Likes.objects.create(user=request.user, image=image).save()
@@ -315,8 +319,12 @@ def change_privacy(request, image_token):
         messages.error(request, "Wrong form of publicity.")
         return redirect('my_profile')
 
-    if image.avatar == True:
+    if image.avatar:
         messages.error(request, "Can't change privacy for avatar")
+        return redirect('my_profile')
+    
+    if image.banned:
+        messages.error(request, "Can't change banned image")
         return redirect('my_profile')
 
     image.public = data.cleaned_data.get('public')
@@ -447,3 +455,20 @@ def accept_complaint(request, complaint_id):
     complaint.resolve = resolve
     complaint.save()
     return redirect('complaints')
+
+
+def ban_image(request, image_token):
+    if request.method != "POST":
+        return redirect('my_profile')
+    print('HERE')
+    user_info = get_object_or_404(UserInfo, user=request.user)
+    if not user_info.moderator:
+        return redirect('my_profile')
+    print('HERE2')
+    image = get_object_or_404(Image, token=image_token)
+    image.banned = True
+    image.public = False
+    image.avatar = False
+    image.save()
+    return redirect('image_info', image_token)
+

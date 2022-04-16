@@ -7,6 +7,7 @@ urlpatterns = [
     path('board', views.image_board, name='image_board'),
     path('image/upload/', views.image_upload, name='image_upload'),
     path('image/<str:image_token>/', views.image_info, name='image_info'),
+    path('image/<str:image_token>/ban_image', views.ban_image, name='ban_image'),
     path('profile/recovery', views.image_recover, name='recover'),
     path('', views.login_request, name='login'),
     path('login', views.login_request, name='login'),
