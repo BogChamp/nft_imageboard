@@ -83,17 +83,26 @@ class UserInfo(models.Model):
 
 
 class ModerationRequest(models.Model):
-    user = models.OneToOneField(settings.AUTH_USER_MODEL,
-                                on_delete=models.CASCADE, unique=True)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL,
+                                on_delete=models.CASCADE)
     image = models.ForeignKey(Image, on_delete=models.CASCADE)
     accept = models.BooleanField(default=False)
 
 
+class Complaints(models.Model):
+    user = models.ForeignKey(settings.AUTH_USER_MODEL,
+                                on_delete=models.CASCADE)
+    image = models.ForeignKey(Image, on_delete=models.CASCADE)
+    date = models.DateTimeField(auto_now=True)
+    body = models.TextField(blank=False)
+    resolve = models.BooleanField(default=False)
+
+
 class Transfer(models.Model):
-    from_user = models.OneToOneField(settings.AUTH_USER_MODEL,
-                                     on_delete=models.CASCADE, unique=True,
+    from_user = models.ForeignKey(settings.AUTH_USER_MODEL,
+                                     on_delete=models.CASCADE,
                                      related_name='from_user')
-    to_user = models.OneToOneField(settings.AUTH_USER_MODEL,
-                                   on_delete=models.CASCADE, unique=True,
+    to_user = models.ForeignKey(settings.AUTH_USER_MODEL,
+                                   on_delete=models.CASCADE,
                                    related_name='to_user')
     image_token = models.CharField(max_length=200)

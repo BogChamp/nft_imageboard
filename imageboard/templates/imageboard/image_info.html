@@ -64,6 +64,7 @@
 
     <p><b>Published date:</b> {{ image.date_last_own }}</p>
     <img src="{{ image.image.url }}" width="200px" height="200px">
+    <p><a href="{% url 'complaint' image_token=image.token %}">Complain</a></p>
     <p>
         <i onClick="document.getElementById('likebutton').submit()"
            class="fa fa-thumbs-up"
@@ -75,6 +76,11 @@
         <input type="hidden">
     </form>
     </p>
+    <p><a href="/board">Back to board</a></p>
+
+    <p><a class="btn-primary" href="{% url 'add_comment' image_token=image.token %}">
+        <h1>Discuss</h1></a></p>
+
     <p>
         <b> Users who liked this image: </b>
         {% for like in likes %}
@@ -91,7 +97,15 @@
             </div>
         {% endfor %}
     </p>
-    <p><a href="/board">Back to board</a></p>
+    <p>
+        <b> Comments: </b>
+        {% for comment in comments %}
+            <div>
+                <p>{{comment.owner}} {{comment.date}}</p>
+                <p> {{ comment.body|safe}} </p>
+            </div>
+        {% endfor %}
+    </p>
 </div>
 
 <!--===============================================================================================-->

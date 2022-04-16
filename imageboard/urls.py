@@ -29,8 +29,13 @@ urlpatterns = [
          name="accept_request"),
     path('moderation/approval_requests', views.approval_requests,
          name='approval_requests'),
+    path('moderation/complaints', views.approval_complaints,
+         name='complaints'),
+    path('moderation/accept_complaint/<int:complaint_id>', views.accept_complaint,
+         name="accept_complaint"),
     path('transfer', views.transfer, name='transfer'),
     path('image/<str:image_token>/add_comment', views.add_comment, name='add_comment'),
+    path('image/<str:image_token>/complaint', views.add_complaint, name='complaint'),
 ]
 
 if settings.DEBUG:

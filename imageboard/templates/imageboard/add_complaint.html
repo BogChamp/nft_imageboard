@@ -1,8 +1,9 @@
 {% load static %}
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <title>Approval requests</title>
+    <title>{{ image.title }}</title>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <!--===============================================================================================-->
@@ -35,49 +36,40 @@
     <!--===============================================================================================-->
     <link rel="stylesheet" type="text/css" href="{% static 'css/util.css' %}">
     <link rel="stylesheet" type="text/css" href="{% static 'css/main.css' %}">
-    <!--===============================================================================================-->
 
+
+<head>
+    <style>
+        #myElement {
+            border:1px solid #CCC;
+            width:200px;
+            height:100px;
+        }
+    </style>
+    <meta charset="utf-8">
 </head>
 <body>
-
-{% if messages %}
-    <b>
-        <ul class="messages">
-            {% for message in messages %}
-                <li{% if message.tags %}
-                    class="{{ message.tags }}"{% endif %}>{{ message }}</li>
-            {% endfor %}
-        </ul>
-    </b>
-{% endif %}
-<div>
-    <a href="/my_profile">My page</a>
-</div>
-{% for request in requests %}
-    <div>
-        <a href="{% url 'image_info' image_token=request.0.image.token %}">
-            <h1>{{ request.0.image.title }}</h1></a>
-
-        <p>from user:<a
-                href="/profile/{{ request.0.image.owner.id }}">{{ request.0.image.owner }}</a>
+    {% if messages %}
+        <b>
+            <ul class="messages">
+                {% for message in messages %}
+                    <li{% if message.tags %}
+                        class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+                {% endfor %}
+            </ul>
+        </b>
+    {% endif %}
+    <p><a href="/board">Back to board</a></p>
+    <h2>{{ image.title }} </h2>
+    <br> <img src="{{ image.image.url }}" width="200px" height="200px"> <br>
+    <br> <b>Add your complaint here: </b> <br>
+    <form id="form" method="POST">
+        {% csrf_token %}
+        {{ form.body }}
+        <p>
+            <button class="btn btn-primary" type="submit">Submit</button>
         </p>
-
-         <p>to user:<a
-                href="/profile/{{ request.0.user.id }}">{{ request.0.user }}</a>
-        </p>
-
-
-        <form method="POST"
-              action="/moderation/accept/{{ request.0.id }}">
-            {% csrf_token %}
-            {{ request.1.accept }}
-            <p>
-                <button class="btn btn-primary" type="submit">Accept</button>
-            </p>
-        </form>
-
-    </div>
-{% endfor %}
+    </form>
 
 <!--===============================================================================================-->
 <script src="{% static 'vendor/jquery/jquery-3.2.1.min.js' %}"></script>

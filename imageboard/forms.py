@@ -2,7 +2,7 @@ from django import forms
 from captcha.fields import CaptchaField
 from django.contrib.auth.models import User
 from django.contrib.auth.forms import UserCreationForm
-from .models import Image, UserInfo, ModerationRequest, Transfer, Comments
+from .models import Image, UserInfo, ModerationRequest, Transfer, Comments, Complaints
 
 
 class ImageForm(forms.ModelForm):
@@ -54,6 +54,7 @@ class AvatarForm(forms.ModelForm):
         model = Image
         fields = ('token',)
 
+
 class CommentForm(forms.ModelForm):
     class Meta:
         model = Comments
@@ -64,3 +65,15 @@ class TransferForm(forms.ModelForm):
     class Meta:
         model = Transfer
         fields = ('to_user', 'image_token',)
+
+
+class ComplaintForm(forms.ModelForm):
+    class Meta:
+        model = Complaints
+        fields = ('body',)
+
+
+class ComplaintApprovalForm(forms.ModelForm):
+    class Meta:
+        model = Complaints
+        fields = ('resolve',)

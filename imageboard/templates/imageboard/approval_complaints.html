@@ -53,24 +53,17 @@
 <div>
     <a href="/my_profile">My page</a>
 </div>
-{% for request in requests %}
+{% for complaint in complaints %}
     <div>
-        <a href="{% url 'image_info' image_token=request.0.image.token %}">
-            <h1>{{ request.0.image.title }}</h1></a>
-
-        <p>from user:<a
-                href="/profile/{{ request.0.image.owner.id }}">{{ request.0.image.owner }}</a>
-        </p>
-
-         <p>to user:<a
-                href="/profile/{{ request.0.user.id }}">{{ request.0.user }}</a>
-        </p>
-
+        Oblect: <a href="{% url 'image_info' image_token=complaint.0.image.token %}">
+            <h1>{{ complaint.0.image.title }}</h1></a>
+        from user:<a href="/profile/{{ complaint.0.user.id }}">{{ complaint.0.user }}</a>
+        <p>{{complaint.0.body}}</p>
 
         <form method="POST"
-              action="/moderation/accept/{{ request.0.id }}">
+              action="/moderation/accept_complaint/{{ complaint.0.id }}">
             {% csrf_token %}
-            {{ request.1.accept }}
+            {{ complaint.1.resolve }}
             <p>
                 <button class="btn btn-primary" type="submit">Accept</button>
             </p>
