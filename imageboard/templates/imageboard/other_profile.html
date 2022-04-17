@@ -48,14 +48,14 @@
 <h3>About me: {{ user_info.info }}</h3>
 
 {% if moder and not user_info.banned %}
-    <form method="POST" action="{{ user.id }}/ban_user">
+    <form method="POST" action="{{ user_info.user.id }}/ban_user">
         {% csrf_token %}
         <button class="btn btn-primary" type="submit">Ban!</button>
     </form>
 {% endif %}
 
 {% if moder and user_info.banned %}
-    <form method="POST" action="{{ user.id }}/unban_user">
+    <form method="POST" action="{{ user_info.user.id }}/unban_user">
         {% csrf_token %}
         <button class="btn btn-primary" type="submit">Unban!</button>
     </form>

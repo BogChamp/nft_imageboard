@@ -502,7 +502,7 @@ def ban_user(request, id):
     if not get_object_or_404(UserInfo, user=request.user).moderator:
         return redirect('my_profile')
 
-    user = get_object_or_404(User, id=id)
+    user = get_object_or_404(User, pk=id)
     user_info = get_object_or_404(UserInfo, user=user)
     if not user_info.moderator:
         user_info.banned = True
@@ -518,7 +518,7 @@ def unban_user(request, id):
     if not get_object_or_404(UserInfo, user=request.user).moderator:
         return redirect('my_profile')
 
-    user = get_object_or_404(User, id=id)
+    user = get_object_or_404(User, pk=id)
     user_info = get_object_or_404(UserInfo, user=user)
     if not user_info.moderator:
         user_info.banned = False
