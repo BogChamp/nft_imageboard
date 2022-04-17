@@ -46,6 +46,12 @@
 <h3>Second Name: {{ user_info.second_name }}</h3>
 <h3>{{ user_info.avatar }}</h3>
 <h3>About me: {{ user_info.info }}</h3>
+{% if moder %}
+    <form method="POST" action="{{ user.id }}/ban_user">
+        {% csrf_token %}
+        <button class="btn btn-primary" type="submit">Ban!</button>
+    </form>
+{% endif %}
 <div>
     <a href="/board">Top Images</a>
 </div>

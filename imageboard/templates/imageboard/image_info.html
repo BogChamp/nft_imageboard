@@ -64,11 +64,11 @@
 
     <p><b>Published date:</b> {{ image.date_last_own }}</p>
     <div>
-        <img src="{{ image.image.url }}" width="200px" height="200px"> 
+        <img src="{{ image.image.url }}" width="200px" height="200px">
         {% if user_info.moderator %}
-            <form method="POST" action="/image/{{image.token}}/ban_image">
-                    {% csrf_token %}
-                    <button class="btn btn-primary" type="submit">Ban!</button>
+            <form method="POST" action="/image/{{ image.token }}/ban_image">
+                {% csrf_token %}
+                <button class="btn btn-primary" type="submit">Ban!</button>
             </form>
         {% endif %}
     </div>
@@ -86,8 +86,9 @@
     </p>
     <p><a href="/board">Back to board</a></p>
 
-    <p><a class="btn-primary" href="{% url 'add_comment' image_token=image.token %}">
-        <h1>Discuss</h1></a></p>
+    <p><a class="btn-primary"
+          href="{% url 'add_comment' image_token=image.token %}">
+    <h1>Discuss</h1></a></p>
 
     <p>
         <b> Users who liked this image: </b>
@@ -109,8 +110,10 @@
         <b> Comments: </b>
         {% for comment in comments %}
             <div>
-                <p>{{comment.owner}} {{comment.date}}<a href="{% url 'complaint_comment' image_token=image.token id=comment.id %}">Complain</a></p>
-                <p> {{ comment.body|safe}} </p>
+                <p>{{ comment.owner }} {{ comment.date }}<a
+                        href="{% url 'complaint_comment' image_token=image.token id=comment.id %}">Complain</a>
+                </p>
+                <p> {{ comment.body|safe }} </p>
             </div>
         {% endfor %}
     </p>

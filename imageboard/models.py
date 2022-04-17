@@ -82,6 +82,7 @@ class UserInfo(models.Model):
     second_name = models.CharField(max_length=20, blank=True)
     info = models.CharField(max_length=500, blank=True)
     moderator = models.BooleanField(default=False)
+    banned = models.BooleanField(default=False)
 
 
 class ModerationRequest(models.Model):

@@ -1,7 +1,8 @@
 from re import I
 from django.contrib.auth.models import User
 from django.shortcuts import render, get_object_or_404, redirect
-from imageboard.models import Image, History, Image_Likes, ModerationRequest, Transfer, Comments, Complaints
+from imageboard.models import Image, History, Image_Likes, ModerationRequest, \
+    Transfer, Comments, Complaints
 from django.http import HttpResponse, HttpResponseForbidden
 from django.utils import timezone
 from imageboard.forms import (
@@ -45,6 +46,12 @@ def image_upload(request):
     form = ImageForm(request.POST, request.FILES)
     if not form.is_valid():
         messages.error(request, "Invalid form!")
+        return render(request, 'imageboard/image_upload.html', {'form': form})
+
+    user_info = get_object_or_404(UserInfo, user=request.user)
+
+    if user_info.banned and not user_info.moderator:
+        messages.error(request, "You have been temporarily banned")
         return render(request, 'imageboard/image_upload.html', {'form': form})
 
     image = form.save(commit=False)
@@ -107,7 +114,7 @@ def image_likes(request, image_token):
     image = get_object_or_404(Image, token=image_token)
     if request.method != "POST":
         return redirect('image_info', image.token)
-    
+
     if not image.public:
         return HttpResponseForbidden()
 
@@ -129,14 +136,16 @@ def add_comment(request, image_token):
     if request.method != "POST":
         form = CommentForm()
         return render(request, 'imageboard/add_comment.html',
-                      {'image': image, 'comments': image_comments, 'comment_form': form})
+                      {'image': image, 'comments': image_comments,
+                       'comment_form': form})
 
     form = CommentForm(request.POST)
     if not form.is_valid():
         messages.error(request, "Wrong form!")
         return render(request, 'imageboard/add_comment.html',
-                  {'image': image, 'comments': image_comments, 'comment_form': form})
-    
+                      {'image': image, 'comments': image_comments,
+                       'comment_form': form})
+
     body = bleach.clean(form.cleaned_data.get('body'))
     Comments.objects.create(
         owner=user,
@@ -144,7 +153,8 @@ def add_comment(request, image_token):
         date=timezone.now(),
         body=body).save()
     return render(request, 'imageboard/add_comment.html',
-                  {'image': image, 'comments': image_comments, 'comment_form': form})
+                  {'image': image, 'comments': image_comments,
+                   'comment_form': form})
 
 
 def my_profile(request):
@@ -160,7 +170,9 @@ def profile(request, id):
     if user_info.user != request.user:
         user_pics = Image.objects.filter(owner=id, public=True)
         return render(request, 'imageboard/other_profile.html',
-                      {'user_info': user_info, 'pics': user_pics})
+                      {'user_info': user_info, 'pics': user_pics,
+                       'moder': get_object_or_404(UserInfo,
+                                                  user=request.user).moderator})
 
     user_pics = Image.objects.filter(owner=id)
     pics_forms = [PrivacyForm(instance=image) for image in user_pics]
@@ -169,7 +181,8 @@ def profile(request, id):
         avatar = avatar[0]
     avatar_form = AvatarForm()
     return render(request, 'imageboard/profile.html',
-                  {'user_info': user_info, 'pics': zip(user_pics, pics_forms),
+                  {'user_info': user_info,
+                   'pics': zip(user_pics, pics_forms),
                    'avatar': avatar, 'avatar_form': avatar_form})
 
 
@@ -224,7 +237,8 @@ def change_profile(request, id):
         return redirect('profile', id)
 
     messages.error(request, "Something went wrong(")
-    return render(request, 'imageboard/change_profile.html', {'form': form})
+    return render(request, 'imageboard/change_profile.html',
+                  {'form': form})
 
 
 def image_recover(request):
@@ -277,11 +291,11 @@ def approval_requests(request):
 def accept_request(request, request_id):
     if request.method != "POST":
         return redirect('my_profile')
-    
+
     user_info = get_object_or_404(UserInfo, user=request.user)
     if not user_info.moderator:
         return HttpResponseForbidden()
-    
+
     form = ApprovalForm(request.POST)
     if not form.is_valid():
         messages.error(request, "Invalid form")
@@ -291,7 +305,8 @@ def accept_request(request, request_id):
     if not accept:
         return redirect('approval_requests')
 
-    moderation_request = get_object_or_404(ModerationRequest, id=request_id)
+    moderation_request = get_object_or_404(ModerationRequest,
+                                           id=request_id)
     moderation_request.accept = accept
     moderation_request.save()
     image = moderation_request.image
@@ -322,7 +337,7 @@ def change_privacy(request, image_token):
     if image.avatar:
         messages.error(request, "Can't change privacy for avatar")
         return redirect('my_profile')
-    
+
     if image.banned:
         messages.error(request, "Can't change banned image")
         return redirect('my_profile')
@@ -346,18 +361,20 @@ def transfer(request):
         image = get_object_or_404(Image, token=image_token)
         if image.owner != from_user:
             messages.error(request, "Image don't belong to you")
-            return render(request, 'imageboard/transfer.html', {'form': form})
+            return render(request, 'imageboard/transfer.html',
+                          {'form': form})
 
         if image.avatar:
             messages.error(request, "Can't transfer avatar")
-            return render(request, 'imageboard/transfer.html', {'form': form})
-        
+            return render(request, 'imageboard/transfer.html',
+                          {'form': form})
+
         if from_user == to_user:
             messages.success(request, "Image transfer successfully!")
             return redirect('profile', request.user.id)
 
         Transfer.objects.create(from_user=from_user, to_user=to_user,
-        image_token=image_token).save()
+                                image_token=image_token).save()
         messages.success(request, "Image transfer successfully!")
         return redirect('profile', request.user.id)
 
@@ -372,17 +389,18 @@ def get_images(request, id):
 
     images = Transfer.objects.filter(to_user=user)
     pics = [Image.objects.get(token=image.image_token) for image in images]
-    return render(request, 'imageboard/get_images.html', {'pics': pics, 'user': id})
+    return render(request, 'imageboard/get_images.html',
+                  {'pics': pics, 'user': id})
 
 
 def get_image(request, id, image_token):
     user = get_object_or_404(User, pk=id)
     if user != request.user:
         return HttpResponseForbidden()
-    
+
     if request.method != "POST":
         return redirect('get_images', id)
-    
+
     image = get_object_or_404(Image, token=image_token)
     image.owner = request.user
     image.save()
@@ -411,7 +429,7 @@ def add_complaint(request, image_token):
     if not form.is_valid():
         messages.error(request, "Wrong form!")
         return render(request, 'imageboard/add_complaint.html',
-                  {'image': image, 'form': form})
+                      {'image': image, 'form': form})
 
     body = form.cleaned_data.get('body')
     Complaints.objects.create(
@@ -427,9 +445,10 @@ def approval_complaints(request):
     user_info = get_object_or_404(UserInfo, user=request.user)
     if not user_info.moderator:
         return HttpResponseForbidden()
-    
+
     complaints = Complaints.objects.filter(resolve=False)
-    complaint_forms = [ComplaintApprovalForm(instance=c) for c in complaints]
+    complaint_forms = [ComplaintApprovalForm(instance=c) for c in
+                       complaints]
     for i in complaints:
         print(i.comment)
     return render(request, 'imageboard/approval_complaints.html',
@@ -439,11 +458,11 @@ def approval_complaints(request):
 def accept_complaint(request, complaint_id):
     if request.method != "POST":
         return redirect('my_profile')
-    
+
     user_info = get_object_or_404(UserInfo, user=request.user)
     if not user_info.moderator:
         return HttpResponseForbidden()
-    
+
     form = ComplaintApprovalForm(request.POST)
     if not form.is_valid():
         messages.error(request, "Invalid form")
@@ -476,10 +495,26 @@ def ban_image(request, image_token):
     return redirect('image_info', image_token)
 
 
+def ban_user(request, id):
+    if request.method != "POST":
+        return redirect('my_profile')
+
+    if not get_object_or_404(UserInfo, user=request.user).moderator:
+        return redirect('my_profile')
+
+    user = get_object_or_404(User, id=id)
+    user_info = get_object_or_404(UserInfo, user=user)
+    if not user_info.moderator:
+        user_info.banned = True
+        user_info.save()
+
+    return redirect('profile', id)
+
+
 def complaint_comment(request, image_token, id):
     if not User.objects.filter(id=request.user.id).exists():
         return redirect('login')
-    
+
     image = get_object_or_404(Image, token=image_token)
     comment = get_object_or_404(Comments, pk=id)
     if request.method != "POST":
@@ -491,8 +526,8 @@ def complaint_comment(request, image_token, id):
     if not form.is_valid():
         messages.error(request, "Wrong form!")
         return render(request, 'imageboard/add_complaint.html',
-                  {'image': image, 'comment': comment, 'form': form})
-    
+                      {'image': image, 'comment': comment, 'form': form})
+
     body = form.cleaned_data.get('body')
     Complaints.objects.create(
         user=request.user,
