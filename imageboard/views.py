@@ -456,6 +456,7 @@ def accept_complaint(request, complaint_id):
     complaint = get_object_or_404(Complaints, id=complaint_id)
     complaint.resolve = resolve
     complaint.save()
+    Comments.objects.filter(id=complaint.comment.id).delete()
     return redirect('complaints')
 
 
@@ -497,6 +498,6 @@ def complaint_comment(request, image_token, id):
         user=request.user,
         image=image,
         date=timezone.now(),
-        body=body, comment=comment.body).save()
+        body=body, comment=comment).save()
     messages.success(request, "Your complaint will be considered")
     return redirect('image_info', image_token)

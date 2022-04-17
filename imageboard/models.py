@@ -53,6 +53,7 @@ class History(models.Model):
     def __str__(self):
         return str(self.owner) + ' : ' + str(self.date)
 
+
 class Comments(models.Model):
     owner = models.ForeignKey(settings.AUTH_USER_MODEL,
                               on_delete=models.CASCADE)
@@ -85,26 +86,26 @@ class UserInfo(models.Model):
 
 class ModerationRequest(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL,
-                                on_delete=models.CASCADE)
+                             on_delete=models.CASCADE)
     image = models.ForeignKey(Image, on_delete=models.CASCADE)
     accept = models.BooleanField(default=False)
 
 
 class Complaints(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL,
-                                on_delete=models.CASCADE)
+                             on_delete=models.CASCADE)
     image = models.ForeignKey(Image, on_delete=models.CASCADE)
     date = models.DateTimeField(auto_now=True)
     body = models.TextField(blank=False)
     resolve = models.BooleanField(default=False)
-    comment = models.TextField(default='')
+    comment = models.ForeignKey(Comments, on_delete=models.CASCADE)
 
 
 class Transfer(models.Model):
     from_user = models.ForeignKey(settings.AUTH_USER_MODEL,
-                                     on_delete=models.CASCADE,
-                                     related_name='from_user')
+                                  on_delete=models.CASCADE,
+                                  related_name='from_user')
     to_user = models.ForeignKey(settings.AUTH_USER_MODEL,
-                                   on_delete=models.CASCADE,
-                                   related_name='to_user')
+                                on_delete=models.CASCADE,
+                                related_name='to_user')
     image_token = models.CharField(max_length=200)
