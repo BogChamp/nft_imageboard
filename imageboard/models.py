@@ -97,6 +97,7 @@ class Complaints(models.Model):
     date = models.DateTimeField(auto_now=True)
     body = models.TextField(blank=False)
     resolve = models.BooleanField(default=False)
+    comment = models.TextField(default='')
 
 
 class Transfer(models.Model):
