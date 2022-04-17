@@ -511,6 +511,22 @@ def ban_user(request, id):
     return redirect('profile', id)
 
 
+def unban_user(request, id):
+    if request.method != "POST":
+        return redirect('my_profile')
+
+    if not get_object_or_404(UserInfo, user=request.user).moderator:
+        return redirect('my_profile')
+
+    user = get_object_or_404(User, id=id)
+    user_info = get_object_or_404(UserInfo, user=user)
+    if not user_info.moderator:
+        user_info.banned = False
+        user_info.save()
+
+    return redirect('profile', id)
+
+
 def complaint_comment(request, image_token, id):
     if not User.objects.filter(id=request.user.id).exists():
         return redirect('login')
