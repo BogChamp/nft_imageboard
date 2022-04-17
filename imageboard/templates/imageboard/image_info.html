@@ -109,7 +109,7 @@
         <b> Comments: </b>
         {% for comment in comments %}
             <div>
-                <p>{{comment.owner}} {{comment.date}}</p>
+                <p>{{comment.owner}} {{comment.date}}<a href="{% url 'complaint_comment' image_token=image.token id=comment.id %}">Complain</a></p>
                 <p> {{ comment.body|safe}} </p>
             </div>
         {% endfor %}

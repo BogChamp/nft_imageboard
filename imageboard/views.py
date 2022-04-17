@@ -430,6 +430,8 @@ def approval_complaints(request):
     
     complaints = Complaints.objects.filter(resolve=False)
     complaint_forms = [ComplaintApprovalForm(instance=c) for c in complaints]
+    for i in complaints:
+        print(i.comment)
     return render(request, 'imageboard/approval_complaints.html',
                   {'complaints': zip(complaints, complaint_forms)})
 
@@ -460,11 +462,11 @@ def accept_complaint(request, complaint_id):
 def ban_image(request, image_token):
     if request.method != "POST":
         return redirect('my_profile')
-    print('HERE')
+
     user_info = get_object_or_404(UserInfo, user=request.user)
     if not user_info.moderator:
         return redirect('my_profile')
-    print('HERE2')
+
     image = get_object_or_404(Image, token=image_token)
     image.banned = True
     image.public = False
@@ -472,3 +474,29 @@ def ban_image(request, image_token):
     image.save()
     return redirect('image_info', image_token)
 
+
+def complaint_comment(request, image_token, id):
+    if not User.objects.filter(id=request.user.id).exists():
+        return redirect('login')
+    
+    image = get_object_or_404(Image, token=image_token)
+    comment = get_object_or_404(Comments, pk=id)
+    if request.method != "POST":
+        form = ComplaintForm()
+        return render(request, 'imageboard/add_complaint.html',
+                      {'image': image, 'comment': comment, 'form': form})
+
+    form = ComplaintForm(request.POST)
+    if not form.is_valid():
+        messages.error(request, "Wrong form!")
+        return render(request, 'imageboard/add_complaint.html',
+                  {'image': image, 'comment': comment, 'form': form})
+    
+    body = form.cleaned_data.get('body')
+    Complaints.objects.create(
+        user=request.user,
+        image=image,
+        date=timezone.now(),
+        body=body, comment=comment.body).save()
+    messages.success(request, "Your complaint will be considered")
+    return redirect('image_info', image_token)

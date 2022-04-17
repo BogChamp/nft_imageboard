@@ -62,6 +62,7 @@
     <p><a href="/board">Back to board</a></p>
     <h2>{{ image.title }} </h2>
     <br> <img src="{{ image.image.url }}" width="200px" height="200px"> <br>
+    <br>{{comment.body|safe}}</br>
     <br> <b>Add your complaint here: </b> <br>
     <form id="form" method="POST">
         {% csrf_token %}

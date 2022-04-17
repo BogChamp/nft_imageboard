@@ -37,6 +37,7 @@ urlpatterns = [
     path('transfer', views.transfer, name='transfer'),
     path('image/<str:image_token>/add_comment', views.add_comment, name='add_comment'),
     path('image/<str:image_token>/complaint', views.add_complaint, name='complaint'),
+    path('image/<str:image_token>/<int:id>', views.complaint_comment, name='complaint_comment'),
 ]
 
 if settings.DEBUG:
